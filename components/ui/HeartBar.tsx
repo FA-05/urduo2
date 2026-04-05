@@ -3,10 +3,8 @@ import { View, StyleSheet, Text, ViewStyle } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withTiming,
   withSequence,
-  runOnJS,
 } from 'react-native-reanimated';
 import { Colors } from '../../constants/colors';
 import { Fonts } from '../../constants/fonts';
@@ -19,30 +17,29 @@ interface HeartProps {
 
 const Heart: React.FC<HeartProps> = ({ active, lost }) => {
   const scale = useSharedValue(1);
-  const opacity = useSharedValue(1);
+  const opacity = useSharedValue(active ? 1 : 0.25);
 
   React.useEffect(() => {
     if (lost) {
+      // No bounce — clean timing animation
       scale.value = withSequence(
-        withTiming(1.2, { duration: 150 }),
-        withSpring(0, { damping: 10, stiffness: 200 })
+        withTiming(1.2, { duration: 120 }),
+        withTiming(0, { duration: 200 })
       );
       opacity.value = withTiming(0, { duration: 300 });
     } else if (!active) {
-      scale.value = 1;
-      opacity.value = 0.3;
+      scale.value = withTiming(1, { duration: 150 });
+      opacity.value = withTiming(0.25, { duration: 150 });
     } else {
-      scale.value = 1;
-      opacity.value = 1;
+      scale.value = withTiming(1, { duration: 150 });
+      opacity.value = withTiming(1, { duration: 150 });
     }
   }, [active, lost]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-      opacity: opacity.value,
-    };
-  });
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    opacity: opacity.value,
+  }));
 
   return (
     <Animated.View style={[styles.heartContainer, animatedStyle]}>
@@ -69,7 +66,7 @@ export const HeartBar: React.FC<HeartBarProps> = ({
 
   React.useEffect(() => {
     if (hearts < prevHearts) {
-      setLostIndex(hearts); // The index that was just lost
+      setLostIndex(hearts);
     } else {
       setLostIndex(null);
     }
@@ -83,7 +80,11 @@ export const HeartBar: React.FC<HeartBarProps> = ({
   });
 
   return (
-    <View style={[styles.container, style]} accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: maxHearts, now: hearts }}>
+    <View
+      style={[styles.container, style]}
+      accessibilityRole="progressbar"
+      accessibilityValue={{ min: 0, max: maxHearts, now: hearts }}
+    >
       <Text style={styles.countText}>{hearts}</Text>
       <View style={styles.heartsRow}>{heartElements}</View>
     </View>
@@ -98,20 +99,22 @@ const styles = StyleSheet.create({
   },
   countText: {
     fontFamily: Fonts.extraBold,
-    color: Colors.redDark,
-    fontSize: 16,
+    color: Colors.errorDark,
+    fontSize: 14,
+    lineHeight: 18,
   },
   heartsRow: {
     flexDirection: 'row',
     gap: 2,
   },
   heartContainer: {
-    width: 24,
-    height: 24,
+    width: 18,
+    height: 18,
     justifyContent: 'center',
     alignItems: 'center',
   },
   heartText: {
-    fontSize: 20,
+    fontSize: 14,
+    lineHeight: 18,
   },
 });

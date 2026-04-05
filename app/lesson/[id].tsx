@@ -2,17 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { getLessonById, Exercise } from '../../data/lessons';
+import { getLessonExercises, Exercise } from '../../data';
 import { masterVocabularyList, VocabularyWord } from '../../data/vocabulary';
 import { useExerciseSession } from '../../hooks/useExerciseSession';
-import { useHearts } from '../../hooks/useHearts';
+import { useHearts, MAX_HEARTS } from '../../hooks/useHearts';
 import { useSound } from '../../hooks/useSound';
 import { useProgressStore } from '../../store/progressStore';
+import { useCompletionStore } from '../../store/completionStore';
 import { shuffle } from '../../utils/shuffle';
 import { ExerciseWrapper } from '../../components/exercises/ExerciseWrapper';
 import { MultipleChoice } from '../../components/exercises/MultipleChoice';
 import { TrueFalse } from '../../components/exercises/TrueFalse';
 import { VocabularyCard } from '../../components/exercises/VocabularyCard';
+import { SentenceReconstruction } from '../../components/exercises/SentenceReconstruction';
 import { FeedbackBanner } from '../../components/exercises/FeedbackBanner';
 import { Colors } from '../../constants/colors';
 import { Fonts } from '../../constants/fonts';
@@ -24,13 +26,14 @@ export default function LessonScreen() {
   const insets = useSafeAreaInsets();
   const { playSound } = useSound();
   const { hearts, loseHeart } = useHearts();
-  const { weakWords } = useProgressStore();
+  const { weakWords, recordExerciseResult } = useProgressStore();
+  const { setCompletionData } = useCompletionStore();
 
   const [lessonData, setLessonData] = useState<Exercise[] | null>(null);
-  const [xpReward, setXpReward] = useState<number>(10);
   const [isFeedbackVisible, setIsFeedbackVisible] = useState(false);
   const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | null>(null);
   const [lastCorrectAnswer, setLastCorrectAnswer] = useState<string | undefined>(undefined);
+  const [isOutOfHearts, setIsOutOfHearts] = useState(false);
 
   const session = useExerciseSession(lessonData || []);
 
@@ -50,15 +53,14 @@ export default function LessonScreen() {
           exampleItalian: w.exampleItalian,
           exampleUrdu: w.exampleUrdu,
         }))
-        .slice(0, 5); // Limit practice session to 5 words
+        .slice(0, 5);
 
       setLessonData(shuffle(practiceExercises));
-      setXpReward(5); // Fixed XP for practice
     } else {
-      const lesson = getLessonById(id as string);
-      if (lesson) {
-        setLessonData(shuffle([...lesson.exercises]));
-        setXpReward(lesson.xpReward);
+      // Lazy-load exercises only when the lesson screen is opened
+      const exercises = getLessonExercises(id as string);
+      if (exercises) {
+        setLessonData(shuffle([...exercises]));
       } else {
         router.replace('/(tabs)/');
       }
@@ -71,6 +73,9 @@ export default function LessonScreen() {
     }
   }, [lessonData]);
 
+
+  const currentExercise = session.exercises[session.currentIndex];
+
   if (!lessonData || session.exercises.length === 0) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -79,21 +84,18 @@ export default function LessonScreen() {
     );
   }
 
-  const currentExercise = session.exercises[session.currentIndex];
 
   const handleAnswer = (correct: boolean) => {
     setLastAnswerCorrect(correct);
     session.recordAnswer(currentExercise.id, correct);
+    recordExerciseResult(correct);
 
-    // Determine the correct answer string for FeedbackBanner if wrong
+    const outOfHearts = !correct && hearts <= 1;
+    if (outOfHearts) {
+      setIsOutOfHearts(true);
+    }
+
     if (!correct) {
-      if (currentExercise.type === 'MultipleChoice') {
-        setLastCorrectAnswer(currentExercise.correctAnswer);
-      } else if (currentExercise.type === 'TrueFalse') {
-        setLastCorrectAnswer(currentExercise.correctAnswer || (currentExercise.isTrue ? "صحیح" : "غلط"));
-      } else {
-        setLastCorrectAnswer(undefined);
-      }
       loseHeart();
       playSound('incorrect');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -102,49 +104,75 @@ export default function LessonScreen() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
 
-    setIsFeedbackVisible(true);
-  };
-
-  const handleContinue = () => {
-    setIsFeedbackVisible(false);
-
-    if (session.heartsLost >= 5 && hearts === 0) {
-      // They died
-      router.replace('/(tabs)/');
+    // VocabularyCard: skip feedback banner, advance directly (unless out of hearts)
+    if (currentExercise.type === 'VocabularyCard' && !outOfHearts) {
+      advanceOrComplete(correct);
       return;
     }
 
-    if (session.currentIndex >= session.exercises.length - 1 && (!lastAnswerCorrect && session.currentIndex === session.exercises.length - 1 ? false : true)) {
-       if(!lastAnswerCorrect) {
-          // If they got the last one wrong, we need to push it to the end of the queue
-          // A simplified approach is just to end it here for now if they got through them all,
-          // but a real duolingo clone would make them repeat it.
-          // Implementing repeat queue logic:
-          const failedEx = session.exercises[session.currentIndex];
-          session.exercises.push(failedEx);
-          session.advanceExercise();
-       } else {
-           // Lesson complete
-            const score = Math.round(((session.exercises.length - session.heartsLost) / session.exercises.length) * 100);
+    // Determine the correct answer string for FeedbackBanner if wrong
+    if (!correct) {
+      if (currentExercise.type === 'MultipleChoice') {
+        setLastCorrectAnswer(currentExercise.correctAnswer);
+      } else if (currentExercise.type === 'TrueFalse') {
+        setLastCorrectAnswer(currentExercise.correctAnswer || (currentExercise.isTrue ? "صحیح" : "غلط"));
+      } else if (currentExercise.type === 'SentenceReconstruction') {
+        setLastCorrectAnswer(currentExercise.correctSequence.join(' '));
+      } else {
+        setLastCorrectAnswer(undefined);
+      }
+    }
 
-            router.replace({
-                pathname: `/lesson-complete/[id]`,
-                params: {
-                id: id as string,
-                xp: xpReward,
-                heartsLost: session.heartsLost,
-                score,
-                answers: JSON.stringify(session.answers)
-                }
-            });
-       }
+    setIsFeedbackVisible(true);
+  };
+
+  const advanceOrComplete = (correct: boolean) => {
+    if (isOutOfHearts) {
+      router.replace('/(tabs)');
+      return;
+    }
+
+    if (session.currentIndex >= session.exercises.length - 1) {
+      // Lesson complete — write to store, then navigate (no URL params)
+      const previousCorrect = session.answers.filter(a => a.correct).length;
+      const totalCorrect = previousCorrect + (correct ? 1 : 0);
+      const totalExercises = session.exercises.length;
+      const score = Math.round((totalCorrect / totalExercises) * 100);
+      const finalHeartsLost = session.heartsLost + (correct ? 0 : 1);
+
+      const answersMap = session.answers.reduce<Record<string, boolean>>((acc, a) => {
+        acc[a.exerciseId] = a.correct;
+        return acc;
+      }, {} as Record<string, boolean>);
+      answersMap[currentExercise.id] = correct;
+
+      setCompletionData({
+        lessonId: id as string,
+        score,
+        heartsLost: finalHeartsLost,
+        answers: answersMap,
+      });
+
+      router.replace('/completion');
     } else {
       session.advanceExercise();
     }
   };
 
+  const handleContinue = () => {
+    setIsFeedbackVisible(false);
+    
+    if (isOutOfHearts) {
+      router.replace('/(tabs)');
+      return;
+    }
+
+    advanceOrComplete(!!lastAnswerCorrect);
+  };
+
+
   const handleQuit = () => {
-    router.replace('/(tabs)/');
+    router.replace('/(tabs)');
   };
 
   const renderExercise = () => {
@@ -175,6 +203,14 @@ export default function LessonScreen() {
             disabled={isFeedbackVisible}
           />
         );
+      case 'SentenceReconstruction':
+        return (
+          <SentenceReconstruction
+            data={currentExercise}
+            onAnswer={handleAnswer}
+            disabled={isFeedbackVisible}
+          />
+        );
       default:
         return <Text>Unknown exercise type</Text>;
     }
@@ -193,8 +229,8 @@ export default function LessonScreen() {
         visible={isFeedbackVisible}
         isCorrect={!!lastAnswerCorrect}
         correctAnswer={lastCorrectAnswer}
-        xpEarned={Math.round(xpReward / session.exercises.length)} // XP per correct answer roughly
         onContinue={handleContinue}
+        outOfHearts={isOutOfHearts}
       />
     </ExerciseWrapper>
   );

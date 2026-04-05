@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Storage, StorageKeys } from '../utils/storage';
+import { NotificationService } from '../utils/notifications';
 
 export interface HeartsState {
   count: number;                    // 0–5
   lastLostAt: number | null;        // timestamp
 }
 
-const MAX_HEARTS = 5;
+export const MAX_HEARTS = 5;
 const REGEN_TIME_MS = 30 * 60 * 1000; // 30 minutes
 
 export const useHearts = () => {
@@ -29,6 +30,14 @@ export const useHearts = () => {
     await Storage.set(StorageKeys.HEARTS, newState);
     setHearts(newCount);
     setLastLostAt(newLastLostAt);
+
+    // Notification Logic
+    if (newCount < MAX_HEARTS && newLastLostAt) {
+      const fullAt = newLastLostAt + (MAX_HEARTS - newCount) * REGEN_TIME_MS;
+      await NotificationService.scheduleHeartsFullNotification(fullAt);
+    } else {
+      await NotificationService.cancelHeartNotifications();
+    }
   };
 
   const calculateHearts = (currentCount: number, lostAt: number | null) => {
@@ -57,10 +66,10 @@ export const useHearts = () => {
   useEffect(() => {
     loadHearts();
 
-    // Check for regeneration every minute
+    // Check for regeneration every second for smooth UI updates
     const interval = setInterval(() => {
       loadHearts();
-    }, 60000);
+    }, 1000);
 
     return () => clearInterval(interval);
   }, [loadHearts]);

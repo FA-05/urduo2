@@ -1,99 +1,126 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withTiming,
-  runOnJS,
+  Easing,
 } from 'react-native-reanimated';
 import { Colors } from '../../constants/colors';
 import { Fonts } from '../../constants/fonts';
 import { Layout } from '../../constants/layout';
 import { Button } from '../ui/Button';
 import { urduStyle } from '../../utils/rtl';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface FeedbackBannerProps {
   visible: boolean;
   isCorrect: boolean;
-  correctAnswer?: string; // Passed when incorrect to show the right answer
-  xpEarned?: number;
+  correctAnswer?: string;
   onContinue: () => void;
+  outOfHearts?: boolean;
 }
 
 export const FeedbackBanner: React.FC<FeedbackBannerProps> = ({
   visible,
   isCorrect,
   correctAnswer,
-  xpEarned = 10,
   onContinue,
+  outOfHearts = false,
 }) => {
-  const translateY = useSharedValue(200);
+  const translateY = useSharedValue(300);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
-    if (visible) {
-      translateY.value = withSpring(0, { damping: 15, stiffness: 200 });
-    } else {
-      translateY.value = withTiming(200, { duration: 300 });
-    }
+    translateY.value = visible
+      ? withTiming(0, { duration: 280, easing: Easing.out(Easing.cubic) })
+      : withTiming(300, { duration: 220, easing: Easing.in(Easing.quad) });
   }, [visible]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateY: translateY.value }],
-    };
-  });
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
 
-  const getTheme = () => {
-    if (isCorrect) {
-      return {
-        bg: Colors.greenLight,
-        border: Colors.green,
-        icon: '✓',
-        iconColor: Colors.greenDark,
-        titleColor: Colors.greenDark,
+  const theme = outOfHearts
+    ? {
+        bg: Colors.errorLight,
+        border: Colors.error,
+        iconBg: Colors.error,
+        iconColor: Colors.white,
+        iconName: 'heart-dislike' as const,
+        titleColor: Colors.errorDark,
+        title: 'دل ختم ہو گئے',
+        buttonTitle: 'ہوم اسکرین پر جائیں',
+        buttonVariant: 'danger' as const,
+      }
+    : isCorrect
+    ? {
+        bg: Colors.primaryLight,
+        border: Colors.primary,
+        iconBg: Colors.primary,
+        iconColor: Colors.white,
+        iconName: 'checkmark-circle' as const,
+        titleColor: Colors.primaryDark,
+        title: 'بہت خوب! 🎉',
+        buttonTitle: 'جاری رکھیں',
         buttonVariant: 'primary' as const,
-      };
-    } else {
-      return {
-        bg: Colors.redLight,
-        border: Colors.red,
-        icon: '✗',
-        iconColor: Colors.redDark,
-        titleColor: Colors.redDark,
+      }
+    : {
+        bg: Colors.errorLight,
+        border: Colors.error,
+        iconBg: Colors.error,
+        iconColor: Colors.white,
+        iconName: 'close-circle' as const,
+        titleColor: Colors.errorDark,
+        title: 'غلط جواب',
+        buttonTitle: 'جاری رکھیں',
         buttonVariant: 'danger' as const,
       };
-    }
-  };
-
-  const theme = getTheme();
 
   return (
-    <Animated.View style={[styles.container, { backgroundColor: theme.bg, borderTopColor: theme.border }, animatedStyle]}>
+    <Animated.View
+      style={[
+        styles.container,
+        {
+          backgroundColor: theme.bg,
+          borderTopColor: theme.border,
+          paddingBottom: Math.max(insets.bottom, Layout.spacing.lg),
+        },
+        animatedStyle,
+      ]}
+    >
       <View style={styles.content}>
+        {/* Header Row */}
         <View style={styles.headerRow}>
-          <View style={[styles.iconContainer, { backgroundColor: theme.bg }]}>
-            <Text style={[styles.iconText, { color: theme.iconColor }]}>{theme.icon}</Text>
+          <View style={[styles.iconCircle, { backgroundColor: theme.iconBg }]}>
+            <Ionicons name={theme.iconName} size={22} color={theme.iconColor} />
           </View>
-          <View style={styles.textContainer}>
-             <Text style={[styles.title, urduStyle, { color: theme.titleColor }]}>
-               {isCorrect ? 'بہت خوب! 🎉' : 'غلط جواب'}
-             </Text>
-             {isCorrect ? (
-                <Text style={styles.subtitle}>XP earned +{xpEarned} XP</Text>
-             ) : (
-                <View style={styles.correctAnswerContainer}>
-                    <Text style={[styles.correctAnswerLabel, urduStyle, { color: theme.titleColor }]}>صحیح جواب:</Text>
-                    <Text style={[styles.correctAnswerText, urduStyle, { color: theme.titleColor }]}>{correctAnswer}</Text>
-                </View>
-             )}
+
+          <View style={styles.textBlock}>
+            <Text style={[styles.title, urduStyle, { color: theme.titleColor }]}>
+              {theme.title}
+            </Text>
+            {!isCorrect && correctAnswer && (
+              <View style={styles.correctAnswerBlock}>
+                <Text style={[styles.correctAnswerLabel, urduStyle, { color: theme.titleColor }]}>
+                  صحیح جواب:
+                </Text>
+                <Text style={[styles.correctAnswerText, urduStyle, { color: theme.titleColor }]}>
+                  {correctAnswer}
+                </Text>
+              </View>
+            )}
           </View>
         </View>
+
+        {/* Continue Button */}
         <Button
-          title="جاری رکھیں"
+          title={theme.buttonTitle}
           variant={theme.buttonVariant}
           onPress={onContinue}
           style={styles.button}
+          size="lg"
         />
       </View>
     </Animated.View>
@@ -108,59 +135,46 @@ const styles = StyleSheet.create({
     right: 0,
     borderTopWidth: 2,
     paddingHorizontal: Layout.spacing.lg,
-    paddingTop: Layout.spacing.xl,
-    paddingBottom: Layout.spacing.xxl, // Account for safe area roughly
-    elevation: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    paddingTop: Layout.spacing.lg,
+    ...Layout.shadow.elevated,
   },
   content: {
-    flexDirection: 'column',
-    gap: Layout.spacing.xl,
+    gap: Layout.spacing.md,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Layout.spacing.md,
   },
-  iconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  iconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.white,
+    flexShrink: 0,
   },
-  iconText: {
-    fontFamily: Fonts.extraBold,
-    fontSize: 20,
-  },
-  textContainer: {
+  textBlock: {
     flex: 1,
     alignItems: 'flex-end',
+    gap: Layout.spacing.xs,
   },
   title: {
     fontFamily: Fonts.extraBold,
-    fontSize: 24,
-    marginBottom: 4,
+    fontSize: Layout.isShortDevice ? 19 : 22,
   },
-  subtitle: {
-    fontFamily: Fonts.bold,
-    fontSize: 16,
-    color: Colors.textMid,
-  },
-  correctAnswerContainer: {
+  correctAnswerBlock: {
     alignItems: 'flex-end',
+    gap: 2,
   },
   correctAnswerLabel: {
-    fontFamily: Fonts.bold,
-    fontSize: 14,
+    fontFamily: Fonts.semiBold,
+    fontSize: 12,
+    opacity: 0.75,
   },
   correctAnswerText: {
     fontFamily: Fonts.extraBold,
-    fontSize: 18,
+    fontSize: Layout.isShortDevice ? 15 : 17,
   },
   button: {
     width: '100%',

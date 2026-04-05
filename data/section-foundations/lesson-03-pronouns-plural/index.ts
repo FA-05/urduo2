@@ -1,0 +1,76 @@
+import { Lesson } from '../../types';
+
+export const lesson: Lesson = {
+  id: "lesson-3",
+  title: "Personal Pronouns - Plural",
+  description: "جمع شخصی ضمیریں",
+  icon: "👥",
+  exercises: [
+    {
+      id: "l3-p1-vocab-noi",
+      type: "VocabularyCard",
+      italian: "Noi",
+      urdu: "ہم",
+      emoji: "👨‍👩‍👧‍👦",
+      pronunciation: "[noy]",
+      exampleItalian: "Noi siamo felici.",
+      exampleUrdu: "ہم خوش ہیں۔",
+    },
+    {
+      id: "l3-p2-vocab-voi",
+      type: "VocabularyCard",
+      italian: "Voi",
+      urdu: "آپ / تم سب",
+      emoji: "👥",
+      pronunciation: "[voy]",
+      exampleItalian: "Voi siete forti.",
+      exampleUrdu: "آپ طاقتور ہیں۔",
+    },
+    {
+      id: "l3-p3-vocab-loro",
+      type: "VocabularyCard",
+      italian: "Loro",
+      urdu: "وہ سب",
+      emoji: "👫",
+      pronunciation: "[loh-roh]",
+      exampleItalian: "Loro sono a casa.",
+      exampleUrdu: "وہ گھر پر ہیں۔",
+    },
+    {
+      id: "l3-p4-mc-noi",
+      type: "MultipleChoice",
+      question: "Italian میں \"ہم\" کو کیا کہتے ہیں؟",
+      options: ["Noi", "Voi", "Loro", "Io"],
+      correctAnswer: "Noi",
+    },
+    {
+      id: "l3-p5-mc-loro",
+      type: "MultipleChoice",
+      question: "\"وہ سب\" کو Italian میں کیا کہتے ہیں؟",
+      options: ["Loro", "Noi", "Voi", "Lui"],
+      correctAnswer: "Loro",
+    },
+    {
+      id: "l3-p6-tf-voi",
+      type: "TrueFalse",
+      statement: "Voi = تم سب / آپ",
+      isTrue: true,
+    },
+    {
+      id: "l3-p7-sr-noi-siamo-felici",
+      type: "SentenceReconstruction",
+      question: "Noi siamo felici",
+      correctSequence: ["ہم", "خوش", "ہیں"],
+      shuffledWords: ["ہم", "خوش", "ہیں", "تم", "اداس"],
+      direction: "it-to-ur",
+    },
+    {
+      id: "l3-p8-sr-loro-a-casa",
+      type: "SentenceReconstruction",
+      question: "وہ گھر پر ہیں",
+      correctSequence: ["Loro", "sono", "a", "casa"],
+      shuffledWords: ["Loro", "sono", "a", "casa", "Noi", "siamo"],
+      direction: "ur-to-it",
+    },
+  ]
+};

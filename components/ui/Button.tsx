@@ -1,9 +1,18 @@
 import React from 'react';
-import { Pressable, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import { 
+  Pressable, 
+  Text, 
+  StyleSheet, 
+  ViewStyle, 
+  TextStyle, 
+  ActivityIndicator,
+  StyleProp 
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 import { Colors } from '../../constants/colors';
 import { Fonts } from '../../constants/fonts';
@@ -15,9 +24,13 @@ interface ButtonProps {
   onPress: () => void;
   variant?: 'primary' | 'secondary' | 'danger' | 'outline' | 'ghost';
   disabled?: boolean;
-  style?: ViewStyle;
-  textStyle?: TextStyle;
+  loading?: boolean;
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
   size?: 'sm' | 'md' | 'lg';
+  icon?: keyof typeof Ionicons.glyphMap;
+  iconSize?: number;
+  iconColor?: string;
 }
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -27,80 +40,108 @@ export const Button: React.FC<ButtonProps> = ({
   onPress,
   variant = 'primary',
   disabled = false,
+  loading = false,
   style,
   textStyle,
   size = 'md',
+  icon,
+  iconSize,
+  iconColor,
 }) => {
-  const isPressed = useSharedValue(false);
+  const scale = useSharedValue(1);
 
   const getColors = () => {
     switch (variant) {
       case 'primary':
-        return { bg: Colors.green, border: Colors.greenDark, text: Colors.white };
+        return {
+          bg: Colors.primary,
+          border: Colors.primaryDark,
+          text: Colors.white,
+        };
       case 'secondary':
-        return { bg: Colors.blue, border: Colors.blueDark, text: Colors.white };
+        return {
+          bg: Colors.indigo,
+          border: Colors.indigoDark,
+          text: Colors.white,
+        };
       case 'danger':
-        return { bg: Colors.red, border: Colors.redDark, text: Colors.white };
+        return {
+          bg: Colors.error,
+          border: Colors.errorDark,
+          text: Colors.white,
+        };
       case 'outline':
-        return { bg: Colors.white, border: Colors.borderDark, text: Colors.textMid };
+        return {
+          bg: Colors.white,
+          border: Colors.borderDark,
+          text: Colors.textMid,
+        };
       case 'ghost':
-        return { bg: 'transparent', border: 'transparent', text: Colors.textMid };
+        return {
+          bg: 'transparent',
+          border: 'transparent',
+          text: Colors.textMid,
+        };
       default:
-        return { bg: Colors.green, border: Colors.greenDark, text: Colors.white };
+        return {
+          bg: Colors.primary,
+          border: Colors.primaryDark,
+          text: Colors.white,
+        };
     }
   };
 
   const colors = getColors();
 
-  const bgOpacity = disabled ? 0.5 : 1;
-
-  const handlePressIn = () => {
-    if (disabled) return;
-    isPressed.value = true;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  };
-
-  const handlePressOut = () => {
-    if (disabled) return;
-    isPressed.value = false;
-  };
-
-  const handlePress = () => {
-    if (disabled) return;
-    onPress();
-  };
-
-  const animatedStyle = useAnimatedStyle(() => {
-    const translateY = withSpring(isPressed.value ? 4 : 0, {
-      mass: 0.5,
-      damping: 15,
-      stiffness: 300,
-    });
-    const borderBottomWidth = withSpring(isPressed.value ? 0 : 4, {
-      mass: 0.5,
-      damping: 15,
-      stiffness: 300,
-    });
-
-    return {
-      transform: [{ translateY }],
-      borderBottomWidth,
-    };
-  });
-
   const getSizeStyles = () => {
     switch (size) {
       case 'sm':
-        return { paddingVertical: Layout.spacing.sm, paddingHorizontal: Layout.spacing.md, fontSize: 14 };
+        return {
+          paddingVertical: Layout.spacing.sm,
+          paddingHorizontal: Layout.spacing.md,
+          fontSize: 14,
+          minHeight: 40,
+        };
       case 'lg':
-        return { paddingVertical: Layout.spacing.md, paddingHorizontal: Layout.spacing.xl, fontSize: 20 };
+        return {
+          paddingVertical: 15,
+          paddingHorizontal: Layout.spacing.xl,
+          fontSize: 18,
+          minHeight: 56,
+        };
       case 'md':
       default:
-        return { paddingVertical: 12, paddingHorizontal: Layout.spacing.lg, fontSize: 16 };
+        return {
+          paddingVertical: 13,
+          paddingHorizontal: Layout.spacing.lg,
+          fontSize: 16,
+          minHeight: 48,
+        };
     }
   };
 
   const sizeStyles = getSizeStyles();
+
+  const handlePressIn = () => {
+    if (disabled || loading) return;
+    scale.value = withTiming(0.97, { duration: 80 });
+  };
+
+  const handlePressOut = () => {
+    scale.value = withTiming(1, { duration: 120 });
+  };
+
+  const handlePress = () => {
+    if (disabled || loading) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onPress();
+  };
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const isInteractionDisabled = disabled || loading;
 
   return (
     <AnimatedPressable
@@ -110,31 +151,48 @@ export const Button: React.FC<ButtonProps> = ({
       style={[
         styles.container,
         {
-          backgroundColor: colors.bg,
-          borderColor: colors.border,
-          opacity: bgOpacity,
+          backgroundColor: isInteractionDisabled ? Colors.border : colors.bg,
+          borderColor: isInteractionDisabled ? Colors.borderDark : colors.border,
           paddingVertical: sizeStyles.paddingVertical,
           paddingHorizontal: sizeStyles.paddingHorizontal,
+          minHeight: sizeStyles.minHeight,
+          opacity: isInteractionDisabled ? 0.6 : 1,
         },
         animatedStyle,
         style,
       ]}
-      android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
+      android_ripple={isInteractionDisabled ? null : { color: 'rgba(0,0,0,0.08)' }}
       accessibilityRole="button"
-      accessibilityState={{ disabled }}
+      accessibilityState={{ disabled: isInteractionDisabled }}
+      hitSlop={Layout.hitSlop}
     >
-      <Text
-        style={[
-          styles.text,
-          { color: colors.text, fontSize: sizeStyles.fontSize },
-          textStyle,
-        ]}
-      >
-        {title}
-      </Text>
+      {loading ? (
+        <ActivityIndicator color={colors.text} size="small" />
+      ) : (
+        <>
+          {icon && (
+            <Ionicons
+              name={icon}
+              size={iconSize || (size === 'sm' ? 18 : size === 'lg' ? 24 : 20)}
+              color={iconColor || (isInteractionDisabled ? Colors.textMuted : colors.text)}
+              style={{ marginRight: Layout.spacing.sm }}
+            />
+          )}
+          <Text
+            style={[
+              styles.text,
+              { color: isInteractionDisabled ? Colors.textMuted : colors.text, fontSize: sizeStyles.fontSize },
+              textStyle,
+            ]}
+          >
+            {title}
+          </Text>
+        </>
+      )}
     </AnimatedPressable>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -142,10 +200,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
+    borderWidth: 1.5,
+    borderBottomWidth: 3,
+    ...Layout.shadow.button,
   },
   text: {
     fontFamily: Fonts.extraBold,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    letterSpacing: 0.4,
   },
 });

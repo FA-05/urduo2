@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Exercise } from '../data/lessons';
+import { Exercise } from '../data';
 
 export interface AnswerRecord {
   exerciseId: string;
@@ -12,7 +12,6 @@ export interface SessionState {
   exercises: Exercise[];      // shuffled
   answers: AnswerRecord[];    // { exerciseId, correct, timeMs }
   heartsLost: number;         // 0–5
-  xpEarned: number;
   startTime: number;          // Date.now()
 }
 
@@ -22,7 +21,6 @@ export const useExerciseSession = (initialExercises: Exercise[]) => {
     exercises: initialExercises,
     answers: [],
     heartsLost: 0,
-    xpEarned: 0,
     startTime: Date.now(),
   });
 
@@ -33,7 +31,7 @@ export const useExerciseSession = (initialExercises: Exercise[]) => {
         ...prev,
         answers: [...prev.answers, { exerciseId, correct, timeMs }],
         heartsLost: correct ? prev.heartsLost : prev.heartsLost + 1,
-        currentIndex: correct ? prev.currentIndex + 1 : prev.currentIndex,
+        currentIndex: prev.currentIndex,
       };
     });
   };
@@ -46,29 +44,28 @@ export const useExerciseSession = (initialExercises: Exercise[]) => {
     }));
   };
 
-  const addXP = (xp: number) => {
-    setSessionState((prev) => ({
-      ...prev,
-      xpEarned: prev.xpEarned + xp,
-    }));
-  };
-
   const resetSession = () => {
     setSessionState({
       currentIndex: 0,
       exercises: initialExercises,
       answers: [],
       heartsLost: 0,
-      xpEarned: 0,
       startTime: Date.now(),
     });
+  };
+
+  const addExercise = (exercise: Exercise) => {
+    setSessionState((prev) => ({
+      ...prev,
+      exercises: [...prev.exercises, exercise],
+    }));
   };
 
   return {
     ...sessionState,
     recordAnswer,
     advanceExercise,
-    addXP,
+    addExercise,
     resetSession,
   };
 };

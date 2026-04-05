@@ -1,60 +1,118 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
+  withTiming,
 } from 'react-native-reanimated';
+import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/colors';
 import { Fonts } from '../../constants/fonts';
 import { Layout } from '../../constants/layout';
 import * as Haptics from 'expo-haptics';
 
-const TabIcon = ({ name, isFocused }: { name: string; isFocused: boolean }) => {
-  const scale = useSharedValue(isFocused ? 1.2 : 1);
-  const color = isFocused ? Colors.green : Colors.tabInactive;
+type TabIconName = React.ComponentProps<typeof Ionicons>['name'];
+
+const TAB_ICONS: Record<string, { outline: TabIconName; filled: TabIconName }> = {
+  index:       { outline: 'home-outline',       filled: 'home' },
+  vocabulary:  { outline: 'book-outline',       filled: 'book' },
+  profile:     { outline: 'person-outline',     filled: 'person' },
+};
+
+const TabItem = ({
+  name,
+  label,
+  isFocused,
+  onPress,
+  onLongPress,
+}: {
+  name: string;
+  label: string;
+  isFocused: boolean;
+  onPress: () => void;
+  onLongPress: () => void;
+}) => {
+  const scale = useSharedValue(1);
+  const indicatorWidth = useSharedValue(isFocused ? 1 : 0);
 
   React.useEffect(() => {
-    scale.value = withSpring(isFocused ? 1.2 : 1, {
-      mass: 0.5,
-      damping: 15,
-      stiffness: 300,
-    });
+    indicatorWidth.value = withTiming(isFocused ? 1 : 0, { duration: 200 });
   }, [isFocused]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-    };
-  });
+  const handlePressIn = () => {
+    scale.value = withTiming(0.9, { duration: 80 });
+  };
 
-  let icon = '🏠';
-  switch (name) {
-    case 'index':
-      icon = '🏠';
-      break;
-    case 'practice':
-      icon = '💪';
-      break;
-    case 'leaderboard':
-      icon = '🏅';
-      break;
-    case 'profile':
-      icon = '👤';
-      break;
-  }
+  const handlePressOut = () => {
+    scale.value = withTiming(1, { duration: 120 });
+  };
+
+  const iconStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const indicatorStyle = useAnimatedStyle(() => ({
+    width: `${indicatorWidth.value * 100}%` as any,
+    opacity: indicatorWidth.value,
+  }));
+
+  const color = isFocused ? Colors.tabActive : Colors.tabInactive;
+  const iconName = isFocused ? TAB_ICONS[name]?.filled : TAB_ICONS[name]?.outline;
 
   return (
-    <Animated.View style={animatedStyle}>
-      <Text style={{ fontSize: 24, color }}>{icon}</Text>
-    </Animated.View>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={isFocused ? { selected: true } : {}}
+      onPress={onPress}
+      onLongPress={onLongPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      style={styles.tabItem}
+      hitSlop={Layout.hitSlop}
+    >
+      {/* Active indicator bar at top */}
+      <View style={styles.indicatorTrack}>
+        <Animated.View style={[styles.indicator, indicatorStyle]} />
+      </View>
+
+      <Animated.View style={iconStyle}>
+        <Ionicons 
+          name={iconName as any} 
+          size={24} 
+          color={color} 
+          style={styles.icon}
+        />
+      </Animated.View>
+
+      <Text
+        style={[
+          styles.label,
+          {
+            color,
+            fontFamily: isFocused ? Fonts.bold : Fonts.regular,
+            opacity: isFocused ? 1 : 0.6,
+          },
+        ]}
+        numberOfLines={1}
+      >
+        {label as string}
+      </Text>
+    </Pressable>
   );
 };
 
 export const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
+  const insets = useSafeAreaInsets();
+
   return (
-    <View style={styles.tabBar}>
+    <View
+      style={[
+        styles.tabBar,
+        { paddingBottom: Math.max(insets.bottom, Layout.spacing.sm) },
+      ]}
+    >
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const label =
@@ -72,7 +130,6 @@ export const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) =>
             target: route.key,
             canPreventDefault: true,
           });
-
           if (!isFocused && !event.defaultPrevented) {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             navigation.navigate(route.name, route.params);
@@ -80,30 +137,18 @@ export const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) =>
         };
 
         const onLongPress = () => {
-          navigation.emit({
-            type: 'tabLongPress',
-            target: route.key,
-          });
+          navigation.emit({ type: 'tabLongPress', target: route.key });
         };
 
         return (
-          <Pressable
+          <TabItem
             key={route.key}
-            accessibilityRole="button"
-            accessibilityState={isFocused ? { selected: true } : {}}
-            accessibilityLabel={options.tabBarAccessibilityLabel}
-            testID={options.tabBarTestID}
+            name={route.name}
+            label={label as string}
+            isFocused={isFocused}
             onPress={onPress}
             onLongPress={onLongPress}
-            style={styles.tabItem}
-          >
-            <TabIcon name={route.name} isFocused={isFocused} />
-            {isFocused && (
-              <Text style={[styles.label, { color: Colors.green }]}>
-                {label as string}
-              </Text>
-            )}
-          </Pressable>
+          />
         );
       })}
     </View>
@@ -116,23 +161,40 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.tabBg,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    paddingBottom: 24, // Safe area roughly
-    paddingTop: 8,
+    paddingTop: Layout.spacing.xs,
     elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
   },
   tabItem: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 48,
+    minHeight: 56,
+    gap: 2,
+  },
+  indicatorTrack: {
+    position: 'absolute',
+    top: -1,
+    left: '25%',
+    right: '25%',
+    height: 3,
+    borderRadius: Layout.radius.round,
+    overflow: 'hidden',
+    backgroundColor: 'transparent',
+  },
+  indicator: {
+    height: '100%',
+    backgroundColor: Colors.tabActive,
+    borderRadius: Layout.radius.round,
+  },
+  icon: {
+    marginBottom: 2,
   },
   label: {
-    fontFamily: Fonts.bold,
     fontSize: 12,
-    marginTop: 4,
+    letterSpacing: 0.2,
   },
 });

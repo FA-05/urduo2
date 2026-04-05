@@ -1,60 +1,53 @@
-import { useEffect, useRef, useState } from 'react';
-import { Audio } from 'expo-av';
+import * as Speech from 'expo-speech';
+import { useAudioPlayer } from 'expo-audio';
 import { Sounds } from '../constants/sounds';
 import { useSettingsStore } from '../store/settingsStore';
 
 export const useSound = () => {
   const { soundEnabled } = useSettingsStore();
-  const [sounds, setSounds] = useState<Record<string, Audio.Sound>>({});
 
-  useEffect(() => {
-    const loadSounds = async () => {
-      const correctSound = new Audio.Sound();
-      const incorrectSound = new Audio.Sound();
-      const completeSound = new Audio.Sound();
-      const streakSound = new Audio.Sound();
+  const players = {
+    correct: useAudioPlayer(Sounds.correct),
+    incorrect: useAudioPlayer(Sounds.incorrect),
+    complete: useAudioPlayer(Sounds.complete),
+    streak: useAudioPlayer(Sounds.streak),
+  };
 
-      try {
-        await correctSound.loadAsync(Sounds.correct);
-        await incorrectSound.loadAsync(Sounds.incorrect);
-        await completeSound.loadAsync(Sounds.complete);
-        await streakSound.loadAsync(Sounds.streak);
-
-        setSounds({
-          correct: correctSound,
-          incorrect: incorrectSound,
-          complete: completeSound,
-          streak: streakSound,
-        });
-      } catch (error) {
-        console.error('Failed to load sounds', error);
-      }
-    };
-
-    loadSounds();
-
-    return () => {
-      Object.values(sounds).forEach(async (sound) => {
-        try {
-          await sound.unloadAsync();
-        } catch (error) {
-          console.error('Failed to unload sound', error);
-        }
-      });
-    };
-  }, []);
-
-  const playSound = async (name: keyof typeof Sounds) => {
-    if (!soundEnabled || !sounds[name]) return;
+  const playSound = (name: keyof typeof Sounds) => {
+    if (!soundEnabled) return;
 
     try {
-      await sounds[name].replayAsync();
+      const player = players[name];
+      if (player) {
+        player.seekTo(0);
+        player.play();
+      }
     } catch (error) {
       console.error(`Failed to play sound: ${name}`, error);
     }
   };
 
+  /**
+   * Speaks the provided text in Italian (it-IT).
+   * Respects soundEnabled setting.
+   */
+  const speak = (text: string) => {
+    if (!soundEnabled) return;
+
+    try {
+      // Use standard Italian language code
+      Speech.speak(text, {
+        language: 'it-IT',
+        pitch: 1.0,
+        rate: 0.9, // Slightly slower for better clarity in learning
+      });
+    } catch (error) {
+      console.error('Failed to speak text:', error);
+    }
+  };
+
   return {
     playSound,
+    speak,
   };
 };

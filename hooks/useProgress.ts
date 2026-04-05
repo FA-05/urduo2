@@ -4,15 +4,18 @@ import { useProgressStore } from '../store/progressStore';
 export const useProgress = () => {
   const {
     completedLessons,
-    totalXP,
-    weeklyXP,
     masteredWords,
     weakWords,
-    addXP,
+    streak,
+    longestStreak,
+    totalExercises,
+    correctExercises,
     completeLesson,
     markWordMastered,
     markWordWeak,
     unmarkWordWeak,
+    recordExerciseResult,
+    updateStreak,
     loadProgress,
     resetProgress,
   } = useProgressStore();
@@ -23,15 +26,18 @@ export const useProgress = () => {
 
   return {
     completedLessons,
-    totalXP,
-    weeklyXP,
     masteredWords,
     weakWords,
-    addXP,
+    streak,
+    longestStreak,
+    totalExercises,
+    correctExercises,
     completeLesson,
     markWordMastered,
     markWordWeak,
     unmarkWordWeak,
+    recordExerciseResult,
+    updateStreak,
     loadProgress,
     resetProgress,
   };

@@ -1,0 +1,77 @@
+import { Lesson } from '../../types';
+
+export const lesson: Lesson = {
+  id: "lesson-15",
+  title: "Colors - Part 1",
+  description: "رنگ - حصہ ۱",
+  icon: "🔴",
+  exercises: [
+    {
+      id: "l15-p1-vocab-rosso",
+      type: "VocabularyCard",
+      italian: "Rosso",
+      urdu: "سرخ / لال",
+      emoji: "🔴",
+      pronunciation: "[rohs-soh]",
+      exampleItalian: "Il cielo non è rosso.",
+      exampleUrdu: "آسمان لال نہیں ہے۔",
+    },
+    {
+      id: "l15-p2-vocab-blu",
+      type: "VocabularyCard",
+      italian: "Blu",
+      urdu: "نیلا",
+      emoji: "🔵",
+      pronunciation: "[bloo]",
+      exampleItalian: "Il mare è blu.",
+      exampleUrdu: "سمندر نیلا ہے۔",
+    },
+    {
+      id: "l15-p3-vocab-verde",
+      type: "VocabularyCard",
+      italian: "Verde",
+      urdu: "سبز",
+      emoji: "🟢",
+      pronunciation: "[vehr-deh]",
+      exampleItalian: "L'erba è verde.",
+      exampleUrdu: "گھاس سبز ہے۔",
+    },
+    {
+      id: "l15-p4-mc-blu",
+      type: "MultipleChoice",
+      question: "\"Blu\" کا اردو مطلب کیا ہے؟",
+      options: ["نیلا", "لال", "سبز", "پیلا"],
+      correctAnswer: "نیلا",
+    },
+    {
+      id: "l15-p5-tf-verde",
+      type: "TrueFalse",
+      statement: "Verde = پیلا",
+      isTrue: false,
+      correctAnswer: "سبز",
+    },
+    {
+      id: "l15-p6-mc-red-italian",
+      type: "MultipleChoice",
+      question: "\"سرخ / لال\" کو Italian میں کیا کہتے ہیں؟",
+      options: ["Rosso", "Blu", "Verde", "Giallo"],
+      correctAnswer: "Rosso",
+    },
+    {
+      id: "l15-p7-sr-erba-verde",
+      type: "SentenceReconstruction",
+      question: "L'erba è verde",
+      correctSequence: ["گھاس", "سبز", "ہے"],
+      shuffledWords: ["گھاس", "سبز", "ہے", "نیلی", "پیلی"],
+      direction: "it-to-ur",
+    },
+    {
+      id: "l15-p8-sr-mare-blu",
+      type: "SentenceReconstruction",
+      question: "سمندر نیلا ہے",
+      correctSequence: ["Il", "mare", "è", "blu"],
+      shuffledWords: ["Il", "mare", "è", "blu", "rosso", "sole"],
+      direction: "ur-to-it",
+    },
+  ]
+};

@@ -12,17 +12,12 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="practice"
+        name="vocabulary"
         options={{
-          title: 'مشق',
+          title: 'الفاظ',
         }}
       />
-      <Tabs.Screen
-        name="leaderboard"
-        options={{
-          title: 'درجہ',
-        }}
-      />
+
       <Tabs.Screen
         name="profile"
         options={{

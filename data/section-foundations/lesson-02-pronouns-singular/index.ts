@@ -1,0 +1,78 @@
+import { Lesson } from '../../types';
+
+export const lesson: Lesson = {
+  id: "lesson-2",
+  title: "Personal Pronouns (Grammar Pill)",
+  description: "انفرادی ضمیریں",
+  icon: "👤",
+  exercises: [
+    {
+      id: "l2-p1-vocab-io",
+      type: "VocabularyCard",
+      italian: "Io",
+      urdu: "میں",
+      emoji: "🙋‍♂️",
+      pronunciation: "[ee-oh]",
+      exampleItalian: "Io sono Pakistano.",
+      exampleUrdu: "میں پاکستانی ہوں۔",
+    },
+    {
+      id: "l2-p2-vocab-tu",
+      type: "VocabularyCard",
+      italian: "Tu",
+      urdu: "تم",
+      emoji: "🫵",
+      pronunciation: "[too]",
+      exampleItalian: "Tu sei il mio amico.",
+      exampleUrdu: "تم میرے دوست ہو۔",
+    },
+    {
+      id: "l2-p3-vocab-lui",
+      type: "VocabularyCard",
+      italian: "Lui",
+      urdu: "وہ (مذکر)",
+      emoji: "👨",
+      pronunciation: "[loo-ee]",
+      exampleItalian: "Lui è molto bravo.",
+      exampleUrdu: "وہ بہت اچھا ہے۔",
+    },
+    {
+      id: "l2-p4-vocab-lei",
+      type: "VocabularyCard",
+      italian: "Lei",
+      urdu: "وہ (مؤنث)",
+      emoji: "👩",
+      pronunciation: "[lay]",
+      exampleItalian: "Lei è bella.",
+      exampleUrdu: "وہ خوبصورت ہے۔",
+    },
+    {
+      id: "l2-p5-mc-io-meaning",
+      type: "MultipleChoice",
+      question: "\"Io\" کا اردو مطلب کیا ہے؟",
+      options: ["میں", "تم", "وہ", "ہم"],
+      correctAnswer: "میں",
+    },
+    {
+      id: "l2-p6-tf-tu-meaning",
+      type: "TrueFalse",
+      statement: "Tu = تم",
+      isTrue: true,
+    },
+    {
+      id: "l2-p7-mc-he-italian",
+      type: "MultipleChoice",
+      question: "\"وہ (مذکر)\" کو Italian میں کیا کہتے ہیں؟",
+      options: ["Lui", "Lei", "Io", "Tu"],
+      correctAnswer: "Lui",
+    },
+    {
+      id: "l2-p8-sr-io-pakistano",
+      type: "SentenceReconstruction",
+      question: "میں پاکستانی ہوں",
+      correctSequence: ["Io", "sono", "Pakistano"],
+      shuffledWords: ["Io", "sono", "Pakistano", "Tu", "Lu"],
+      direction: "ur-to-it",
+    },
+  ]
+};

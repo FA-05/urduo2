@@ -19,25 +19,23 @@ interface ProgressBarProps {
 
 export const ProgressBar: React.FC<ProgressBarProps> = ({
   progress,
-  color = Colors.green,
+  color = Colors.primary,
   backgroundColor = Colors.border,
-  height = 16,
+  height = 14,
   style,
 }) => {
   const animatedProgress = useSharedValue(0);
 
   useEffect(() => {
     animatedProgress.value = withTiming(progress, {
-      duration: 300,
+      duration: 350,
       easing: Easing.inOut(Easing.ease),
     });
   }, [progress]);
 
-  const progressStyle = useAnimatedStyle(() => {
-    return {
-      width: `${animatedProgress.value * 100}%`,
-    };
-  });
+  const progressStyle = useAnimatedStyle(() => ({
+    width: `${animatedProgress.value * 100}%`,
+  }));
 
   return (
     <View
@@ -47,7 +45,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         style,
       ]}
       accessibilityRole="progressbar"
-      accessibilityValue={{ min: 0, max: 100, now: progress * 100 }}
+      accessibilityValue={{ min: 0, max: 100, now: Math.round(progress * 100) }}
     >
       <Animated.View
         style={[
@@ -56,6 +54,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
           progressStyle,
         ]}
       >
+        {/* Subtle inner highlight for depth */}
         <View style={[styles.highlight, { borderRadius: height / 2 }]} />
       </Animated.View>
     </View>
@@ -73,10 +72,10 @@ const styles = StyleSheet.create({
   },
   highlight: {
     position: 'absolute',
-    top: '15%',
-    left: '5%',
-    right: '5%',
-    height: '30%',
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    top: '10%',
+    left: '4%',
+    right: '4%',
+    height: '35%',
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
   },
 });

@@ -8,7 +8,6 @@ import { Button } from '../ui/Button';
 import { Layout } from '../../constants/layout';
 import { Colors } from '../../constants/colors';
 import { Fonts } from '../../constants/fonts';
-import { urduStyle } from '../../utils/rtl';
 
 interface ExerciseWrapperProps {
   progress: number; // 0 to 1
@@ -41,7 +40,7 @@ export const ExerciseWrapper: React.FC<ExerciseWrapperProps> = ({
         <Pressable
           onPress={handleQuitPress}
           style={styles.closeButton}
-          hitSlop={20}
+          hitSlop={Layout.hitSlop}
           accessibilityLabel="Quit Lesson"
         >
           <Text style={styles.closeIcon}>✕</Text>
@@ -61,21 +60,21 @@ export const ExerciseWrapper: React.FC<ExerciseWrapperProps> = ({
         onClose={() => setShowQuitModal(false)}
       >
         <View style={styles.modalContent}>
-          <Text style={[styles.modalTitle, urduStyle]}>
-            کیا آپ واقعی چھوڑنا چاہتے ہیں؟
+          <Text style={styles.modalTitle}>
+            Are you sure you want to quit?
           </Text>
-          <Text style={[styles.modalSubtitle, urduStyle]}>
-            آپ کی تمام پیشرفت ضائع ہو جائے گی۔
+          <Text style={styles.modalSubtitle}>
+            All your progress will be lost.
           </Text>
           <View style={styles.modalActions}>
             <Button
-              title="جاری رکھیں"
+              title="Keep Learning"
               variant="primary"
               onPress={() => setShowQuitModal(false)}
               style={styles.modalButton}
             />
             <Button
-              title="چھوڑ دیں"
+              title="Quit Lesson"
               variant="danger"
               onPress={confirmQuit}
               style={styles.modalButton}
@@ -100,13 +99,15 @@ const styles = StyleSheet.create({
     gap: Layout.spacing.md,
   },
   closeButton: {
-    width: 32,
-    height: 32,
+    width: 40,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: Layout.radius.round,
+    backgroundColor: Colors.border,
   },
   closeIcon: {
-    fontSize: 24,
+    fontSize: 18,
     color: Colors.textMid,
     fontFamily: Fonts.extraBold,
   },

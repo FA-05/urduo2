@@ -6,15 +6,14 @@ interface DividerProps {
   style?: ViewStyle;
 }
 
-export const Divider: React.FC<DividerProps> = ({ style }) => {
-  return <View style={[styles.divider, style]} />;
-};
+export const Divider: React.FC<DividerProps> = ({ style }) => (
+  <View style={[styles.divider, style]} />
+);
 
 const styles = StyleSheet.create({
   divider: {
-    height: 1,
+    height: StyleSheet.hairlineWidth,
     backgroundColor: Colors.border,
-    width: '100%',
-    marginVertical: 16,
+    marginVertical: 12,
   },
 });

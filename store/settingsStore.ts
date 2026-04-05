@@ -1,47 +1,42 @@
 import { create } from 'zustand';
 import { Storage, StorageKeys } from '../utils/storage';
+import { getSupabase, isSupabaseConfigured } from '../utils/supabase';
+import NetInfo from '@react-native-community/netinfo';
 
 export interface SettingsState {
   soundEnabled: boolean;
   dailyReminderEnabled: boolean;
-  dailyGoalXP: number;
   avatar: string;
   username: string;
-  hasOnboarded: boolean;
 }
 
 export interface SettingsStore extends SettingsState {
+  isHydrated: boolean;
   setSoundEnabled: (enabled: boolean) => void;
   setDailyReminderEnabled: (enabled: boolean) => void;
-  setDailyGoalXP: (xp: number) => void;
   setAvatar: (avatar: string) => void;
   setUsername: (username: string) => void;
-  setHasOnboarded: (onboarded: boolean) => void;
   loadSettings: () => Promise<void>;
+  syncSettings: () => Promise<void>;
   resetSettings: () => void;
 }
 
 const defaultState: SettingsState = {
   soundEnabled: true,
   dailyReminderEnabled: true,
-  dailyGoalXP: 20, // Default to regular
   avatar: '👤',
   username: 'New Learner',
-  hasOnboarded: false,
 };
 
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
   ...defaultState,
+  isHydrated: false,
   setSoundEnabled: (enabled) => {
     set({ soundEnabled: enabled });
     Storage.set(StorageKeys.SETTINGS, get());
   },
   setDailyReminderEnabled: (enabled) => {
     set({ dailyReminderEnabled: enabled });
-    Storage.set(StorageKeys.SETTINGS, get());
-  },
-  setDailyGoalXP: (xp) => {
-    set({ dailyGoalXP: xp });
     Storage.set(StorageKeys.SETTINGS, get());
   },
   setAvatar: (avatar) => {
@@ -51,16 +46,72 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   setUsername: (username) => {
     set({ username });
     Storage.set(StorageKeys.SETTINGS, get());
+    get().syncSettings();
   },
-  setHasOnboarded: (onboarded) => {
-    set({ hasOnboarded: onboarded });
-    Storage.set(StorageKeys.SETTINGS, get());
+  syncSettings: async () => {
+    if (!isSupabaseConfigured()) return;
+
+    // Check for Wi-Fi connection
+    try {
+      const netInfo = await NetInfo.fetch();
+      if (netInfo.type !== 'wifi') return;
+    } catch (e) {
+      return;
+    }
+
+    const supabase = getSupabase();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ username: get().username })
+      .eq('id', user.id);
+
+    if (error) {
+      console.error('Error syncing settings to Supabase:', error);
+    }
   },
   loadSettings: async () => {
-    const data = await Storage.get<SettingsState>(StorageKeys.SETTINGS);
-    if (data) {
-      set(data);
+    // No-op if already hydrated
+    if (get().isHydrated) return;
+
+    // 1. Load from local storage immediately
+    try {
+      const localData = await Storage.get<SettingsState>(StorageKeys.SETTINGS);
+      if (localData) {
+        set({ ...localData, isHydrated: true });
+      } else {
+        set({ isHydrated: true });
+      }
+    } catch (e) {
+      console.warn('Error loading local settings:', e);
+      set({ isHydrated: true });
     }
+
+    // 2. Sync username from Supabase in the background (non-blocking)
+    if (!isSupabaseConfigured()) return;
+
+    (async () => {
+      try {
+        const supabase = getSupabase();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('username')
+            .eq('id', user.id)
+            .single();
+
+          if (data && !error) {
+            set({ username: data.username });
+            Storage.set(StorageKeys.SETTINGS, get());
+          }
+        }
+      } catch (e) {
+        console.warn('Supabase settings load failed (skipping):', e);
+      }
+    })();
   },
   resetSettings: () => {
     set(defaultState);

@@ -3,16 +3,16 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withSequence,
   withTiming,
-  runOnJS,
 } from 'react-native-reanimated';
 import { Colors } from '../../constants/colors';
 import { Fonts } from '../../constants/fonts';
 import { Layout } from '../../constants/layout';
 import { urduStyle } from '../../utils/rtl';
-import { MultipleChoiceExercise as MultipleChoiceData } from '../../data/lessons';
+import { MultipleChoiceExercise as MultipleChoiceData } from '../../data';
+import { shuffle } from '../../utils/shuffle';
+import { Button } from '../ui/Button';
 
 interface MultipleChoiceProps {
   data: MultipleChoiceData;
@@ -29,6 +29,7 @@ const OptionButton = ({
   isWrong,
   disabled,
   onPress,
+  index,
 }: {
   option: string;
   isSelected: boolean;
@@ -36,114 +37,187 @@ const OptionButton = ({
   isWrong: boolean;
   disabled: boolean;
   onPress: () => void;
+  index: number;
 }) => {
-  const isPressed = useSharedValue(false);
   const shakeOffset = useSharedValue(0);
+  const pressScale = useSharedValue(1);
 
   useEffect(() => {
     if (isWrong && isSelected) {
       shakeOffset.value = withSequence(
-        withTiming(-10, { duration: 50 }),
-        withTiming(10, { duration: 50 }),
         withTiming(-8, { duration: 50 }),
         withTiming(8, { duration: 50 }),
-        withTiming(-5, { duration: 50 }),
-        withTiming(5, { duration: 50 }),
+        withTiming(-6, { duration: 50 }),
+        withTiming(6, { duration: 50 }),
         withTiming(0, { duration: 50 })
       );
     }
   }, [isWrong, isSelected]);
 
+  const getState = () => {
+    if (isCorrect) return 'correct';
+    if (isWrong && isSelected) return 'wrong';
+    if (isSelected) return 'selected';
+    return 'default';
+  };
+
+  const state = getState();
+
+  const stateStyles = {
+    correct: {
+      bg: Colors.primaryLight,
+      border: Colors.primary,
+      borderBottom: Colors.primaryDark,
+      text: Colors.primaryDark,
+      badge: Colors.primary,
+    },
+    wrong: {
+      bg: Colors.errorLight,
+      border: Colors.error,
+      borderBottom: Colors.errorDark,
+      text: Colors.errorDark,
+      badge: Colors.error,
+    },
+    selected: {
+      bg: Colors.indigoLight,
+      border: Colors.indigo,
+      borderBottom: Colors.indigoDark,
+      text: Colors.indigoDark,
+      badge: Colors.indigo,
+    },
+    default: {
+      bg: Colors.white,
+      border: Colors.border,
+      borderBottom: Colors.borderDark,
+      text: Colors.textDark,
+      badge: Colors.textMid,
+    },
+  };
+
+  const s = stateStyles[state];
+
   const handlePressIn = () => {
-    if (disabled) return;
-    isPressed.value = true;
+    if (!disabled) pressScale.value = withTiming(0.97, { duration: 60 });
   };
-
   const handlePressOut = () => {
-    if (disabled) return;
-    isPressed.value = false;
+    pressScale.value = withTiming(1, { duration: 100 });
   };
 
-  const getColors = () => {
-    if (isCorrect) return { bg: Colors.greenLight, border: Colors.greenDark, text: Colors.greenDark };
-    if (isWrong && isSelected) return { bg: Colors.redLight, border: Colors.redDark, text: Colors.redDark };
-    if (isSelected) return { bg: Colors.blueLight, border: Colors.blueDark, text: Colors.blueDark };
-    return { bg: Colors.white, border: Colors.border, text: Colors.textDark };
-  };
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: shakeOffset.value },
+      { scale: pressScale.value },
+    ],
+  }));
 
-  const colors = getColors();
-
-  const animatedStyle = useAnimatedStyle(() => {
-    const scale = withSpring(isPressed.value ? 0.97 : 1, { mass: 0.5, damping: 15, stiffness: 300 });
-    const borderBottomWidth = withSpring(isPressed.value && !disabled ? 2 : 4, { mass: 0.5, damping: 15, stiffness: 300 });
-    const translateY = withSpring(isPressed.value && !disabled ? 2 : 0, { mass: 0.5, damping: 15, stiffness: 300 });
-
-    return {
-      transform: [{ scale }, { translateX: shakeOffset.value }, { translateY }],
-      borderBottomWidth,
-    };
-  });
+  const labels = ['A', 'B', 'C', 'D'];
 
   return (
     <AnimatedPressable
+      onPress={onPress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
-      onPress={onPress}
       disabled={disabled}
       style={[
         styles.optionButton,
-        { backgroundColor: colors.bg, borderColor: colors.border },
+        {
+          backgroundColor: s.bg,
+          borderColor: s.border,
+          borderBottomColor: s.borderBottom,
+        },
         animatedStyle,
       ]}
       accessibilityRole="button"
       accessibilityState={{ disabled, selected: isSelected }}
     >
-      <Text style={[styles.optionText, urduStyle, { color: colors.text }]}>{option}</Text>
-      {isCorrect && <Text style={styles.icon}>✓</Text>}
-      {isWrong && isSelected && <Text style={styles.icon}>✗</Text>}
+      {/* Letter badge */}
+      <View style={[styles.letterBadge, { backgroundColor: s.badge + '22', borderColor: s.border }]}>
+        <Text style={[styles.letterBadgeText, { color: s.text }]}>
+          {state === 'correct' ? '✓' : state === 'wrong' ? '✗' : labels[index] ?? '•'}
+        </Text>
+      </View>
+
+      <Text style={[styles.optionText, urduStyle, { color: s.text }]} numberOfLines={2}>
+        {option}
+      </Text>
     </AnimatedPressable>
   );
 };
 
 export const MultipleChoice: React.FC<MultipleChoiceProps> = ({ data, onAnswer, disabled }) => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [shuffledOptions, setShuffledOptions] = useState<string[]>([]);
 
-  // Reset state when data changes (new exercise)
+  const cleanQuestionText = (text: string) => {
+    const quoteMatch = text.match(/["'«»"„]([^"'«»""„]+)["'«»""„]/);
+    if (quoteMatch) return quoteMatch[1];
+    const parenMatch = text.match(/\(([^)]+)\)/);
+    if (parenMatch) return parenMatch[1];
+    return text;
+  };
+
+  const displayQuestion = cleanQuestionText(data.question);
+
   useEffect(() => {
     setSelectedOption(null);
+    setShuffledOptions(shuffle([...data.options]));
   }, [data.id]);
 
   const handlePress = (option: string) => {
-    if (disabled || selectedOption) return;
+    if (disabled || (selectedOption && disabled)) return;
     setSelectedOption(option);
-    const correct = option === data.correctAnswer;
-    onAnswer(correct);
+  };
+
+  const handleCheck = () => {
+    if (!selectedOption || disabled) return;
+    onAnswer(selectedOption === data.correctAnswer);
   };
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.instruction, urduStyle]}>اس کا کیا مطلب ہے؟</Text>
-      <View style={styles.questionContainer}>
-        <Text style={[styles.questionText, urduStyle, { fontFamily: Fonts.extraBold, textAlign: 'center' }]}>{data.question}</Text>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={[styles.instruction, urduStyle]}>اس کا کیا مطلب ہے؟</Text>
       </View>
+
+      {/* Question Card */}
+      <View style={styles.questionCard}>
+        <Text style={[styles.questionText, urduStyle]}>{displayQuestion}</Text>
+        <Text style={styles.questionHint}>صحیح ترجمہ چنیں</Text>
+      </View>
+
+      {/* Options */}
       <View style={styles.optionsGrid}>
-        {data.options.map((option, index) => {
+        {shuffledOptions.map((option, index) => {
           const isSelected = selectedOption === option;
-          const isCorrect = selectedOption !== null && option === data.correctAnswer && (isSelected || selectedOption !== null); // Reveal correct if wrong selected
-          const isWrong = selectedOption === option && option !== data.correctAnswer;
+          const isCorrect = disabled && option === data.correctAnswer;
+          const isWrong = disabled && isSelected && option !== data.correctAnswer;
 
           return (
             <OptionButton
               key={index}
+              index={index}
               option={option}
               isSelected={isSelected}
               isCorrect={isCorrect}
               isWrong={isWrong}
-              disabled={disabled || selectedOption !== null}
+              disabled={disabled}
               onPress={() => handlePress(option)}
             />
           );
         })}
+      </View>
+
+      {/* Footer */}
+      <View style={styles.footer}>
+        <Button
+          title="چیک کریں"
+          variant="primary"
+          disabled={!selectedOption || disabled}
+          onPress={handleCheck}
+          style={styles.checkButton}
+          size="lg"
+        />
       </View>
     </View>
   );
@@ -152,45 +226,85 @@ export const MultipleChoice: React.FC<MultipleChoiceProps> = ({ data, onAnswer, 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: Layout.spacing.lg,
+    paddingHorizontal: Layout.spacing.lg,
+    paddingTop: Layout.isShortDevice ? Layout.spacing.sm : Layout.spacing.md,
+    paddingBottom: Layout.isShortDevice ? Layout.spacing.lg : Layout.spacing.xl,
+    justifyContent: 'space-between',
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: Layout.isShortDevice ? 4 : Layout.spacing.sm,
   },
   instruction: {
-    fontSize: 24,
-    color: Colors.textDark,
-    marginBottom: Layout.spacing.xl,
+    fontSize: Layout.isShortDevice ? 17 : 20,
+    color: Colors.textMid,
+    fontFamily: Fonts.extraBold,
+    textAlign: 'center',
   },
-  questionContainer: {
+  questionCard: {
     alignItems: 'center',
-    marginBottom: Layout.spacing.xxl,
+    padding: Layout.isShortDevice ? Layout.spacing.md : Layout.spacing.lg,
+    backgroundColor: Colors.surface,
+    borderRadius: Layout.radius.xl,
+    borderWidth: 1.5,
+    borderColor: Colors.border,
+    ...Layout.shadow.card,
+    elevation: 3,
+    gap: Layout.isShortDevice ? 4 : 8,
   },
   questionText: {
-    fontSize: 32,
+    fontFamily: Fonts.urdu,
+    fontSize: Layout.isShortDevice ? 28 : 36,
     color: Colors.textDark,
+    textAlign: 'center',
+    lineHeight: Layout.isShortDevice ? 40 : 52,
+  },
+  questionHint: {
+    fontSize: 11,
+    color: Colors.textMuted,
+    fontFamily: Fonts.regular,
+    letterSpacing: 0.3,
+    marginTop: 2,
   },
   optionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: Layout.spacing.md,
+    flex: 1,
+    justifyContent: 'center',
+    gap: Layout.isShortDevice ? Layout.spacing.xs : Layout.spacing.sm,
+    paddingVertical: Layout.isShortDevice ? 4 : Layout.spacing.sm,
   },
   optionButton: {
-    width: '48%',
-    minHeight: 80,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Layout.spacing.md,
+    paddingVertical: Layout.isShortDevice ? 10 : 14,
     borderRadius: Layout.radius.lg,
-    borderWidth: 2,
+    borderWidth: 1.5,
+    borderBottomWidth: Layout.isShortDevice ? 3 : 4,
+    gap: Layout.spacing.sm,
+  },
+  letterBadge: {
+    width: Layout.isShortDevice ? 28 : 32,
+    height: Layout.isShortDevice ? 28 : 32,
+    borderRadius: Layout.isShortDevice ? 14 : 16,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: Layout.spacing.md,
-    flexDirection: 'row',
+    flexShrink: 0,
+  },
+  letterBadgeText: {
+    fontFamily: Fonts.extraBold,
+    fontSize: Layout.isShortDevice ? 13 : 15,
   },
   optionText: {
-    fontSize: 20,
-    textAlign: 'center',
+    fontSize: Layout.isShortDevice ? 16 : 18,
+    textAlign: 'right',
     flex: 1,
+    fontFamily: Fonts.bold,
   },
-  icon: {
-    fontSize: 20,
-    marginLeft: 8,
-    fontFamily: Fonts.extraBold,
+  footer: {
+    paddingTop: Layout.isShortDevice ? 4 : Layout.spacing.sm,
+  },
+  checkButton: {
+    width: '100%',
   },
 });

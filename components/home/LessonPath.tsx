@@ -1,12 +1,13 @@
-import React from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, ScrollView, StyleSheet, Platform } from 'react-native';
 import { LessonNode } from './LessonNode';
 import { SectionHeader } from './SectionHeader';
-import { Section } from '../../data/lessons';
+import { SectionMeta } from '../../data';
 import { Layout } from '../../constants/layout';
+import { Colors } from '../../constants/colors';
 
 interface LessonPathProps {
-  sections: Section[];
+  sections: SectionMeta[];
   completedLessons: string[];
   onLessonPress: (id: string, status: 'completed' | 'active' | 'locked') => void;
 }
@@ -16,42 +17,74 @@ export const LessonPath: React.FC<LessonPathProps> = ({
   completedLessons,
   onLessonPress,
 }) => {
-  let globalIndex = 0;
-  let activeFound = false;
+  // Flatten sections and notes into a single array for stickyHeaderIndices
+  const { items, stickyHeaderIndices } = useMemo(() => {
+    const items: React.ReactNode[] = [];
+    const stickyHeaderIndices: number[] = [];
+    let activeFoundLocal = false;
+    let globalIndexLocal = 0;
+
+    sections.forEach((section, sectionIndex) => {
+      // Add header index
+      stickyHeaderIndices.push(items.length);
+      
+      // Add Header
+      items.push(
+        <View key={`header-${section.id}`} style={styles.stickyHeaderWrapper}>
+          <SectionHeader 
+            title={section.title} 
+            subtitle={section.subtitle} 
+            index={sectionIndex + 1} 
+            icon={section.icon}
+          />
+        </View>
+      );
+
+      // Add Lessons container
+      items.push(
+        <View key={`lessons-${section.id}`} style={styles.lessonsContainer}>
+          {section.lessons.map((lesson) => {
+            const isCompleted = completedLessons.includes(lesson.id);
+            let status: 'completed' | 'active' | 'locked' = 'locked';
+
+            if (isCompleted) {
+              status = 'completed';
+            } else if (!activeFoundLocal) {
+              status = 'active';
+              activeFoundLocal = true;
+            }
+
+            const node = (
+              <LessonNode
+                key={lesson.id}
+                id={lesson.id}
+                icon={lesson.icon}
+                status={status}
+                index={globalIndexLocal}
+                sectionIndex={sectionIndex}
+                onPress={onLessonPress}
+              />
+            );
+            globalIndexLocal++;
+            return node;
+          })}
+        </View>
+      );
+    });
+
+    return { items, stickyHeaderIndices };
+  }, [sections, completedLessons, onLessonPress]);
 
   return (
-    <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-      {sections.map((section, sectionIndex) => (
-        <View key={section.id}>
-          <SectionHeader title={section.title} subtitle={section.subtitle} index={sectionIndex + 1} />
-          <View style={styles.lessonsContainer}>
-            {section.lessons.map((lesson) => {
-              const isCompleted = completedLessons.includes(lesson.id);
-              let status: 'completed' | 'active' | 'locked' = 'locked';
-
-              if (isCompleted) {
-                status = 'completed';
-              } else if (!activeFound) {
-                status = 'active';
-                activeFound = true;
-              }
-
-              const node = (
-                <LessonNode
-                  key={lesson.id}
-                  id={lesson.id}
-                  icon={lesson.icon}
-                  status={status}
-                  index={globalIndex}
-                  onPress={onLessonPress}
-                />
-              );
-              globalIndex++;
-              return node;
-            })}
-          </View>
-        </View>
-      ))}
+    <ScrollView 
+      contentContainerStyle={styles.container} 
+      showsVerticalScrollIndicator={false}
+      stickyHeaderIndices={stickyHeaderIndices}
+      scrollEventThrottle={16}
+      decelerationRate="normal"
+      removeClippedSubviews={Platform.OS === 'android'}
+    >
+      {items}
       {/* Spacer at the bottom */}
       <View style={{ height: 100 }} />
     </ScrollView>
@@ -61,6 +94,10 @@ export const LessonPath: React.FC<LessonPathProps> = ({
 const styles = StyleSheet.create({
   container: {
     paddingBottom: Layout.spacing.xxl,
+  },
+  stickyHeaderWrapper: {
+    backgroundColor: Colors.background, // Match app background to hide underlying elements
+    zIndex: 10,
   },
   lessonsContainer: {
     alignItems: 'center',

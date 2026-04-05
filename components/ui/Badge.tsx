@@ -6,8 +6,8 @@ import { Layout } from '../../constants/layout';
 
 interface BadgeProps {
   label: string;
-  icon?: string; // Emoji
-  variant?: 'xp' | 'level' | 'streak' | 'neutral';
+  icon?: string; // Emoji or single char
+  variant?: 'streak' | 'warning' | 'neutral';
   style?: ViewStyle;
   textStyle?: TextStyle;
   size?: 'sm' | 'md' | 'lg';
@@ -23,12 +23,10 @@ export const Badge: React.FC<BadgeProps> = ({
 }) => {
   const getVariantStyles = () => {
     switch (variant) {
-      case 'xp':
-        return { bg: Colors.goldLight, text: Colors.goldDark, border: Colors.gold };
-      case 'level':
-        return { bg: Colors.purpleLight, text: Colors.purple, border: Colors.purple };
       case 'streak':
-        return { bg: Colors.redLight, text: Colors.redDark, border: Colors.red };
+        return { bg: Colors.errorLight, text: Colors.errorDark, border: Colors.error };
+      case 'warning':
+        return { bg: Colors.warningLight, text: Colors.warningDark, border: Colors.warning };
       case 'neutral':
       default:
         return { bg: Colors.background, text: Colors.textMid, border: Colors.border };
@@ -40,12 +38,12 @@ export const Badge: React.FC<BadgeProps> = ({
   const getSizeStyles = () => {
     switch (size) {
       case 'sm':
-        return { paddingVertical: 2, paddingHorizontal: 6, fontSize: 10, iconSize: 12 };
+        return { paddingVertical: 2, paddingHorizontal: 7, fontSize: 10, iconSize: 11 };
       case 'lg':
-        return { paddingVertical: 6, paddingHorizontal: 12, fontSize: 16, iconSize: 18 };
+        return { paddingVertical: 6, paddingHorizontal: 14, fontSize: 15, iconSize: 17 };
       case 'md':
       default:
-        return { paddingVertical: 4, paddingHorizontal: 8, fontSize: 12, iconSize: 14 };
+        return { paddingVertical: 4, paddingHorizontal: 10, fontSize: 12, iconSize: 13 };
     }
   };
 
@@ -58,7 +56,6 @@ export const Badge: React.FC<BadgeProps> = ({
         {
           backgroundColor: colors.bg,
           borderColor: colors.border,
-          borderWidth: 1,
           paddingVertical: sizeStyles.paddingVertical,
           paddingHorizontal: sizeStyles.paddingHorizontal,
         },
@@ -67,7 +64,7 @@ export const Badge: React.FC<BadgeProps> = ({
       accessibilityRole="text"
     >
       {icon && (
-        <Text style={[styles.icon, { fontSize: sizeStyles.iconSize, marginRight: 4 }]}>
+        <Text style={[styles.icon, { fontSize: sizeStyles.iconSize }]}>
           {icon}
         </Text>
       )}
@@ -88,14 +85,16 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
     borderRadius: Layout.radius.round,
+    borderWidth: 1,
     alignSelf: 'flex-start',
   },
   icon: {
     fontFamily: Fonts.regular,
   },
   text: {
-    fontFamily: Fonts.extraBold,
-    textTransform: 'uppercase',
+    fontFamily: Fonts.bold,
+    letterSpacing: 0.2,
   },
 });

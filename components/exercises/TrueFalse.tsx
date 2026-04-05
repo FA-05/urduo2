@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
@@ -11,8 +11,7 @@ import { Colors } from '../../constants/colors';
 import { Fonts } from '../../constants/fonts';
 import { Layout } from '../../constants/layout';
 import { urduStyle } from '../../utils/rtl';
-import { TrueFalseExercise as TrueFalseData } from '../../data/lessons';
-import { Badge } from '../ui/Badge';
+import { TrueFalseExercise as TrueFalseData } from '../../data';
 
 interface TrueFalseProps {
   data: TrueFalseData;
@@ -30,6 +29,7 @@ const ActionButton = ({
   isWrong,
   disabled,
   onPress,
+  icon,
 }: {
   label: string;
   colorType: 'green' | 'red';
@@ -38,9 +38,10 @@ const ActionButton = ({
   isWrong: boolean;
   disabled: boolean;
   onPress: () => void;
+  icon: keyof typeof Ionicons.glyphMap;
 }) => {
-  const isPressed = useSharedValue(false);
   const shakeOffset = useSharedValue(0);
+  const pressScale = useSharedValue(1);
 
   useEffect(() => {
     if (isWrong && isSelected) {
@@ -56,53 +57,96 @@ const ActionButton = ({
     }
   }, [isWrong, isSelected]);
 
+  const getState = () => {
+    if (isCorrect) return 'correct';
+    if (isWrong && isSelected) return 'wrong';
+    if (isSelected) return 'selected';
+    return colorType === 'green' ? 'defaultGreen' : 'defaultRed';
+  };
+
+  const state = getState();
+
+  const stateMap = {
+    correct: {
+      bg: Colors.primaryLight,
+      border: Colors.primary,
+      borderBottom: Colors.primaryDark,
+      icon: Colors.primaryDark,
+      text: Colors.primaryDark,
+      iconName: 'checkmark-circle' as keyof typeof Ionicons.glyphMap,
+    },
+    wrong: {
+      bg: Colors.errorLight,
+      border: Colors.error,
+      borderBottom: Colors.errorDark,
+      icon: Colors.errorDark,
+      text: Colors.errorDark,
+      iconName: 'close-circle' as keyof typeof Ionicons.glyphMap,
+    },
+    selected: {
+      bg: Colors.indigoLight,
+      border: Colors.indigo,
+      borderBottom: Colors.indigoDark,
+      icon: Colors.indigoDark,
+      text: Colors.indigoDark,
+      iconName: icon,
+    },
+    defaultGreen: {
+      bg: Colors.primary,
+      border: Colors.primaryDark,
+      borderBottom: Colors.primaryDark,
+      icon: Colors.white,
+      text: Colors.white,
+      iconName: icon,
+    },
+    defaultRed: {
+      bg: Colors.error,
+      border: Colors.errorDark,
+      borderBottom: Colors.errorDark,
+      icon: Colors.white,
+      text: Colors.white,
+      iconName: icon,
+    },
+  };
+
+  const s = stateMap[state];
+
   const handlePressIn = () => {
-    if (disabled) return;
-    isPressed.value = true;
+    if (!disabled) pressScale.value = withTiming(0.97, { duration: 60 });
   };
-
   const handlePressOut = () => {
-    if (disabled) return;
-    isPressed.value = false;
+    pressScale.value = withTiming(1, { duration: 100 });
   };
 
-  const getColors = () => {
-    if (isCorrect) return { bg: Colors.greenLight, border: Colors.greenDark, text: Colors.greenDark };
-    if (isWrong && isSelected) return { bg: Colors.redLight, border: Colors.redDark, text: Colors.redDark };
-    if (isSelected) return { bg: Colors.blueLight, border: Colors.blueDark, text: Colors.blueDark };
-    if (colorType === 'green') return { bg: Colors.green, border: Colors.greenDark, text: Colors.white };
-    if (colorType === 'red') return { bg: Colors.red, border: Colors.redDark, text: Colors.white };
-    return { bg: Colors.white, border: Colors.border, text: Colors.textDark };
-  };
-
-  const colors = getColors();
-
-  const animatedStyle = useAnimatedStyle(() => {
-    const scale = withSpring(isPressed.value ? 0.97 : 1, { mass: 0.5, damping: 15, stiffness: 300 });
-    const borderBottomWidth = withSpring(isPressed.value && !disabled ? 2 : 4, { mass: 0.5, damping: 15, stiffness: 300 });
-    const translateY = withSpring(isPressed.value && !disabled ? 2 : 0, { mass: 0.5, damping: 15, stiffness: 300 });
-
-    return {
-      transform: [{ scale }, { translateX: shakeOffset.value }, { translateY }],
-      borderBottomWidth,
-    };
-  });
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: shakeOffset.value },
+      { scale: pressScale.value },
+    ],
+  }));
 
   return (
     <AnimatedPressable
+      onPress={onPress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
-      onPress={onPress}
       disabled={disabled}
       style={[
         styles.actionButton,
-        { backgroundColor: colors.bg, borderColor: colors.border },
+        {
+          backgroundColor: s.bg,
+          borderColor: s.border,
+          borderBottomColor: s.borderBottom,
+        },
         animatedStyle,
       ]}
       accessibilityRole="button"
       accessibilityState={{ disabled, selected: isSelected }}
     >
-      <Text style={[styles.actionText, urduStyle, { color: colors.text }]}>{label}</Text>
+      <View style={styles.actionButtonContent}>
+        <Ionicons name={s.iconName} size={Layout.isShortDevice ? 22 : 26} color={s.icon} />
+        <Text style={[styles.actionText, urduStyle, { color: s.text }]}>{label}</Text>
+      </View>
     </AnimatedPressable>
   );
 };
@@ -121,25 +165,63 @@ export const TrueFalse: React.FC<TrueFalseProps> = ({ data, onAnswer, disabled }
     onAnswer(correct);
   };
 
+  const [italian, urdu] = data.statement.split(' = ');
+
   return (
     <View style={styles.container}>
-      <Badge label="صحیح؟" variant="neutral" style={styles.badge} textStyle={urduStyle} />
-      <View style={styles.card}>
-        <Text style={[styles.statementText, urduStyle, { fontFamily: Fonts.extraBold, textAlign: 'center' }]}>{data.statement}</Text>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={[styles.instructionHeader, urduStyle]}>کیا یہ صحیح ہے؟</Text>
       </View>
+
+      {/* Statement Card */}
+      <View style={styles.card}>
+        {/* Decorative top accent */}
+        <View style={styles.cardAccent} />
+
+        <View style={styles.wordContainer}>
+          {/* Italian row */}
+          <View style={styles.langBlock}>
+            <View style={styles.langLabelRow}>
+              <Text style={styles.flagEmoji}>🇮🇹</Text>
+              <Text style={styles.langLabel}>Italiano</Text>
+            </View>
+            <Text style={styles.italianText}>{italian?.trim()}</Text>
+          </View>
+
+          {/* Divider  */}
+          <View style={styles.cardDivider} />
+
+          {/* Urdu row */}
+          <View style={styles.langBlock}>
+            <View style={styles.langLabelRow}>
+              <Text style={styles.flagEmoji}>🇵🇰</Text>
+              <Text style={styles.langLabel}>اردو</Text>
+            </View>
+            <Text style={[styles.urduText, urduStyle]}>{urdu?.trim()}</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Hint */}
+      <Text style={[styles.hint, urduStyle]}>اوپر دیے گئے ترجمے کی تصدیق کریں</Text>
+
+      {/* Action Buttons */}
       <View style={styles.actionsContainer}>
         <ActionButton
-          label="صحیح"
+          label="صحیح ✓"
           colorType="green"
+          icon="checkmark-circle"
           isSelected={selectedOption === true}
-          isCorrect={selectedOption !== null && data.isTrue} // Reveal correct if chosen true and it is true, or chosen false and it is true
+          isCorrect={selectedOption !== null && data.isTrue}
           isWrong={selectedOption === true && !data.isTrue}
           disabled={disabled || selectedOption !== null}
           onPress={() => handlePress(true)}
         />
         <ActionButton
-          label="غلط"
+          label="غلط ✗"
           colorType="red"
+          icon="close-circle"
           isSelected={selectedOption === false}
           isCorrect={selectedOption !== null && !data.isTrue}
           isWrong={selectedOption === false && data.isTrue}
@@ -154,43 +236,113 @@ export const TrueFalse: React.FC<TrueFalseProps> = ({ data, onAnswer, disabled }
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: Layout.spacing.lg,
-    justifyContent: 'center',
+    paddingHorizontal: Layout.spacing.lg,
+    paddingTop: Layout.isShortDevice ? Layout.spacing.sm : Layout.spacing.lg,
+    paddingBottom: Layout.isShortDevice ? Layout.spacing.lg : Layout.spacing.xl,
+    justifyContent: 'space-between',
   },
-  badge: {
-    alignSelf: 'center',
-    marginBottom: Layout.spacing.lg,
+  header: {
+    alignItems: 'center',
+    marginBottom: Layout.isShortDevice ? Layout.spacing.sm : Layout.spacing.md,
+  },
+  instructionHeader: {
+    fontSize: Layout.isShortDevice ? 16 : 18,
+    fontFamily: Fonts.extraBold,
+    color: Colors.textMid,
+    textAlign: 'center',
   },
   card: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderRadius: Layout.radius.xl,
-    padding: Layout.spacing.xxl,
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: Colors.border,
+    overflow: 'hidden',
+    // No flex: 1 — card should be naturally sized, not expand to fill screen
+    ...Layout.shadow.card,
+    elevation: 4,
+    marginBottom: Layout.isShortDevice ? Layout.spacing.sm : Layout.spacing.lg,
+  },
+  cardAccent: {
+    height: 4,
+    backgroundColor: Colors.primary,
+    opacity: 0.7,
+  },
+  wordContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 200,
-    marginBottom: Layout.spacing.xxl,
-    ...Layout.shadow.card,
+    padding: Layout.isShortDevice ? Layout.spacing.lg : Layout.spacing.xl,
+    paddingVertical: Layout.isShortDevice ? Layout.spacing.lg : Layout.spacing.xl,
+    gap: Layout.isShortDevice ? Layout.spacing.md : Layout.spacing.lg,
   },
-  statementText: {
-    fontSize: 36,
+  langBlock: {
+    alignItems: 'center',
+    gap: Layout.isShortDevice ? 4 : 6,
+    width: '100%',
+  },
+  langLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Layout.spacing.xs,
+  },
+  flagEmoji: {
+    fontSize: Layout.isShortDevice ? 14 : 16,
+  },
+  langLabel: {
+    fontSize: 10,
+    color: Colors.textMuted,
+    fontFamily: Fonts.semiBold,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  italianText: {
+    fontSize: Layout.isShortDevice ? 20 : 24,
     color: Colors.textDark,
+    fontFamily: Fonts.bold,
+    textAlign: 'center',
+  },
+  cardDivider: {
+    height: 1,
+    width: '60%',
+    backgroundColor: Colors.border,
+    borderRadius: 1,
+  },
+  urduText: {
+    fontSize: Layout.isShortDevice ? 26 : 32,
+    color: Colors.textDark,
+    fontFamily: Fonts.urdu,
+    textAlign: 'center',
+    lineHeight: Layout.isShortDevice ? 38 : 46,
+  },
+  hint: {
+    fontSize: 11,
+    color: Colors.textMuted,
+    fontFamily: Fonts.regular,
+    textAlign: 'center',
+    marginBottom: Layout.isShortDevice ? Layout.spacing.sm : Layout.spacing.md,
+    letterSpacing: 0.3,
   },
   actionsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: Layout.spacing.lg,
+    gap: Layout.isShortDevice ? Layout.spacing.sm : Layout.spacing.md,
+    width: '100%',
   },
   actionButton: {
     flex: 1,
-    height: 64,
+    height: Layout.isShortDevice ? 56 : 64,
     borderRadius: Layout.radius.lg,
-    borderWidth: 2,
+    borderWidth: 1.5,
+    borderBottomWidth: Layout.isShortDevice ? 3 : 4,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: Layout.spacing.sm,
+  },
+  actionButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Layout.spacing.xs,
   },
   actionText: {
-    fontSize: 24,
+    fontSize: Layout.isShortDevice ? 16 : 18,
+    fontFamily: Fonts.extraBold,
   },
 });

@@ -10,8 +10,8 @@ import {
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withSpring,
   withTiming,
+  Easing,
   runOnJS,
 } from 'react-native-reanimated';
 import { Colors } from '../../constants/colors';
@@ -39,29 +39,29 @@ export const Modal: React.FC<ModalProps> = ({
   React.useEffect(() => {
     if (visible) {
       setShowModal(true);
-      translateY.value = withSpring(0, { damping: 20, stiffness: 200 });
-      opacity.value = withTiming(1, { duration: 300 });
+      translateY.value = withTiming(0, {
+        duration: 280,
+        easing: Easing.out(Easing.cubic),
+      });
+      opacity.value = withTiming(1, { duration: 200 });
     } else {
-      translateY.value = withTiming(SCREEN_HEIGHT, { duration: 300 });
-      opacity.value = withTiming(0, { duration: 300 }, (isFinished) => {
-        if (isFinished) {
-          runOnJS(setShowModal)(false);
-        }
+      translateY.value = withTiming(SCREEN_HEIGHT, {
+        duration: 240,
+        easing: Easing.in(Easing.quad),
+      });
+      opacity.value = withTiming(0, { duration: 200 }, (finished) => {
+        if (finished) runOnJS(setShowModal)(false);
       });
     }
   }, [visible]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateY: translateY.value }],
-    };
-  });
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
 
-  const animatedBackdropStyle = useAnimatedStyle(() => {
-    return {
-      opacity: opacity.value,
-    };
-  });
+  const animatedBackdropStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }));
 
   if (!showModal) return null;
 
@@ -72,6 +72,7 @@ export const Modal: React.FC<ModalProps> = ({
       </TouchableWithoutFeedback>
       <View style={styles.container} pointerEvents="box-none">
         <Animated.View style={[styles.content, containerStyle, animatedStyle]}>
+          {/* Drag handle pill */}
           <View style={styles.handle} />
           {children}
         </Animated.View>
@@ -83,25 +84,26 @@ export const Modal: React.FC<ModalProps> = ({
 const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(26, 26, 46, 0.55)',
   },
   container: {
     flex: 1,
     justifyContent: 'flex-end',
   },
   content: {
-    backgroundColor: Colors.white,
-    borderTopLeftRadius: Layout.radius.xl,
-    borderTopRightRadius: Layout.radius.xl,
+    backgroundColor: Colors.cardBg,
+    borderTopLeftRadius: Layout.radius.xxl,
+    borderTopRightRadius: Layout.radius.xxl,
     padding: Layout.spacing.lg,
     paddingBottom: Layout.spacing.xxl,
-    minHeight: SCREEN_HEIGHT * 0.3,
+    minHeight: SCREEN_HEIGHT * 0.28,
+    ...Layout.shadow.elevated,
   },
   handle: {
-    width: 40,
+    width: 36,
     height: 4,
-    backgroundColor: Colors.borderDark,
-    borderRadius: 2,
+    backgroundColor: Colors.border,
+    borderRadius: Layout.radius.round,
     alignSelf: 'center',
     marginBottom: Layout.spacing.lg,
   },

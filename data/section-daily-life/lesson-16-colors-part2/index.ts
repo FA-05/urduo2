@@ -1,0 +1,76 @@
+import { Lesson } from '../../types';
+
+export const lesson: Lesson = {
+  id: "lesson-16",
+  title: "Colors - Part 2",
+  description: "رنگ - حصہ ۲",
+  icon: "🟡",
+  exercises: [
+    {
+      id: "l16-p1-vocab-giallo",
+      type: "VocabularyCard",
+      italian: "Giallo",
+      urdu: "پیلا",
+      emoji: "🟡",
+      pronunciation: "[jahl-loh]",
+      exampleItalian: "Il sole è giallo.",
+      exampleUrdu: "سورج پیلا ہے۔",
+    },
+    {
+      id: "l16-p2-vocab-bianco",
+      type: "VocabularyCard",
+      italian: "Bianco",
+      urdu: "سفید",
+      emoji: "⚪",
+      pronunciation: "[byahn-koh]",
+      exampleItalian: "Il latte è bianco.",
+      exampleUrdu: "دودھ سفید ہے۔",
+    },
+    {
+      id: "l16-p3-vocab-nero",
+      type: "VocabularyCard",
+      italian: "Nero",
+      urdu: "کالا / سیاہ",
+      emoji: "⚫",
+      pronunciation: "[neh-roh]",
+      exampleItalian: "Il gatto è nero.",
+      exampleUrdu: "بلی کالی ہے۔",
+    },
+    {
+      id: "l16-p4-mc-bianco",
+      type: "MultipleChoice",
+      question: "\"Bianco\" کا اردو مطلب کیا ہے؟",
+      options: ["سفید", "کالا", "پیلا", "نیلا"],
+      correctAnswer: "سفید",
+    },
+    {
+      id: "l16-p5-tf-nero",
+      type: "TrueFalse",
+      statement: "Nero = کالا",
+      isTrue: true,
+    },
+    {
+      id: "l16-p6-mc-yellow-italian",
+      type: "MultipleChoice",
+      question: "\"پیلا\" کو Italian میں کیا کہتے ہیں؟",
+      options: ["Giallo", "Bianco", "Nero", "Rosso"],
+      correctAnswer: "Giallo",
+    },
+    {
+      id: "l16-p7-sr-sole-giallo",
+      type: "SentenceReconstruction",
+      question: "Il sole è giallo",
+      correctSequence: ["سورج", "پیلا", "ہے"],
+      shuffledWords: ["سورج", "پیلا", "ہے", "نیلا", "آسمان"],
+      direction: "it-to-ur",
+    },
+    {
+      id: "l16-p8-sr-gatto-nero",
+      type: "SentenceReconstruction",
+      question: "بلی کالی ہے",
+      correctSequence: ["Il", "gatto", "è", "nero"],
+      shuffledWords: ["Il", "gatto", "è", "nero", "bianco", "cane"],
+      direction: "ur-to-it",
+    },
+  ]
+};
