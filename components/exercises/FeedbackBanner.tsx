@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -34,7 +33,7 @@ export const FeedbackBanner: React.FC<FeedbackBannerProps> = ({
 
   useEffect(() => {
     translateY.value = visible
-      ? withTiming(0, { duration: 280, easing: Easing.out(Easing.cubic) })
+      ? withTiming(0, { duration: 300, easing: Easing.out(Easing.cubic) })
       : withTiming(300, { duration: 220, easing: Easing.in(Easing.quad) });
   }, [visible]);
 
@@ -42,37 +41,35 @@ export const FeedbackBanner: React.FC<FeedbackBannerProps> = ({
     transform: [{ translateY: translateY.value }],
   }));
 
+  // Spec §6.5: Feedback Banner
   const theme = outOfHearts
     ? {
-        bg: Colors.errorLight,
-        border: Colors.error,
-        iconBg: Colors.error,
-        iconColor: Colors.white,
-        iconName: 'heart-dislike' as const,
-        titleColor: Colors.errorDark,
+        bg: Colors.roseTint08,
+        border: Colors.roseBorder25,
+        iconBg: Colors.rose,
+        iconText: '✗',
+        titleColor: Colors.roseDim,
         title: 'دل ختم ہو گئے',
         buttonTitle: 'ہوم اسکرین پر جائیں',
         buttonVariant: 'danger' as const,
       }
     : isCorrect
     ? {
-        bg: Colors.primaryLight,
-        border: Colors.primary,
-        iconBg: Colors.primary,
-        iconColor: Colors.white,
-        iconName: 'checkmark-circle' as const,
-        titleColor: Colors.primaryDark,
+        bg: Colors.jadeTint12,
+        border: Colors.jadeBorder25,
+        iconBg: Colors.jadeVivid,
+        iconText: '✓',
+        titleColor: Colors.jadeDim,
         title: 'بہت خوب! 🎉',
         buttonTitle: 'جاری رکھیں',
         buttonVariant: 'primary' as const,
       }
     : {
-        bg: Colors.errorLight,
-        border: Colors.error,
-        iconBg: Colors.error,
-        iconColor: Colors.white,
-        iconName: 'close-circle' as const,
-        titleColor: Colors.errorDark,
+        bg: Colors.roseTint08,
+        border: Colors.roseBorder25,
+        iconBg: Colors.rose,
+        iconText: '✗',
+        titleColor: Colors.roseDim,
         title: 'غلط جواب',
         buttonTitle: 'جاری رکھیں',
         buttonVariant: 'danger' as const,
@@ -91,10 +88,10 @@ export const FeedbackBanner: React.FC<FeedbackBannerProps> = ({
       ]}
     >
       <View style={styles.content}>
-        {/* Header Row */}
         <View style={styles.headerRow}>
+          {/* Spec: 32x32 filled circle with white icon */}
           <View style={[styles.iconCircle, { backgroundColor: theme.iconBg }]}>
-            <Ionicons name={theme.iconName} size={22} color={theme.iconColor} />
+            <Text style={styles.iconText}>{theme.iconText}</Text>
           </View>
 
           <View style={styles.textBlock}>
@@ -114,7 +111,6 @@ export const FeedbackBanner: React.FC<FeedbackBannerProps> = ({
           </View>
         </View>
 
-        {/* Continue Button */}
         <Button
           title={theme.buttonTitle}
           variant={theme.buttonVariant}
@@ -133,7 +129,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    borderTopWidth: 2,
+    borderTopWidth: 1.5,
     paddingHorizontal: Layout.spacing.lg,
     paddingTop: Layout.spacing.lg,
     ...Layout.shadow.elevated,
@@ -147,12 +143,17 @@ const styles = StyleSheet.create({
     gap: Layout.spacing.md,
   },
   iconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
+  },
+  iconText: {
+    fontSize: 16,
+    color: Colors.white,
+    fontFamily: Fonts.extraBold,
   },
   textBlock: {
     flex: 1,
@@ -160,7 +161,7 @@ const styles = StyleSheet.create({
     gap: Layout.spacing.xs,
   },
   title: {
-    fontFamily: Fonts.extraBold,
+    fontFamily: Fonts.urduBold,
     fontSize: Layout.isShortDevice ? 19 : 22,
   },
   correctAnswerBlock: {
@@ -168,12 +169,12 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   correctAnswerLabel: {
-    fontFamily: Fonts.semiBold,
+    fontFamily: Fonts.urduSemiBold,
     fontSize: 12,
     opacity: 0.75,
   },
   correctAnswerText: {
-    fontFamily: Fonts.extraBold,
+    fontFamily: Fonts.urduBold,
     fontSize: Layout.isShortDevice ? 15 : 17,
   },
   button: {

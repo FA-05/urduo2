@@ -46,13 +46,10 @@ const ActionButton = ({
   useEffect(() => {
     if (isWrong && isSelected) {
       shakeOffset.value = withSequence(
-        withTiming(-10, { duration: 50 }),
-        withTiming(10, { duration: 50 }),
-        withTiming(-8, { duration: 50 }),
-        withTiming(8, { duration: 50 }),
-        withTiming(-5, { duration: 50 }),
-        withTiming(5, { duration: 50 }),
-        withTiming(0, { duration: 50 })
+        withTiming(-4, { duration: 75 }),
+        withTiming(4, { duration: 75 }),
+        withTiming(-2, { duration: 75 }),
+        withTiming(0, { duration: 75 })
       );
     }
   }, [isWrong, isSelected]);
@@ -66,43 +63,39 @@ const ActionButton = ({
 
   const state = getState();
 
+  // Spec §6.4 True/False: jade tones for صحیح, rose tones for غلط
   const stateMap = {
     correct: {
-      bg: Colors.primaryLight,
-      border: Colors.primary,
-      borderBottom: Colors.primaryDark,
-      icon: Colors.primaryDark,
-      text: Colors.primaryDark,
+      bg: Colors.jadeTint12,
+      border: Colors.jadeVivid,
+      icon: Colors.jadeDim,
+      text: Colors.jadeDim,
       iconName: 'checkmark-circle' as keyof typeof Ionicons.glyphMap,
     },
     wrong: {
-      bg: Colors.errorLight,
-      border: Colors.error,
-      borderBottom: Colors.errorDark,
-      icon: Colors.errorDark,
-      text: Colors.errorDark,
+      bg: Colors.roseTint08,
+      border: Colors.rose,
+      icon: Colors.roseDim,
+      text: Colors.roseDim,
       iconName: 'close-circle' as keyof typeof Ionicons.glyphMap,
     },
     selected: {
-      bg: Colors.indigoLight,
-      border: Colors.indigo,
-      borderBottom: Colors.indigoDark,
-      icon: Colors.indigoDark,
-      text: Colors.indigoDark,
+      bg: Colors.jadeTint10,
+      border: Colors.jadeVivid,
+      icon: Colors.jadeDim,
+      text: Colors.jadeDim,
       iconName: icon,
     },
     defaultGreen: {
-      bg: Colors.primary,
-      border: Colors.primaryDark,
-      borderBottom: Colors.primaryDark,
+      bg: Colors.jadeVivid,
+      border: Colors.jade,
       icon: Colors.white,
       text: Colors.white,
       iconName: icon,
     },
     defaultRed: {
-      bg: Colors.error,
-      border: Colors.errorDark,
-      borderBottom: Colors.errorDark,
+      bg: Colors.rose,
+      border: Colors.roseDim,
       icon: Colors.white,
       text: Colors.white,
       iconName: icon,
@@ -136,7 +129,6 @@ const ActionButton = ({
         {
           backgroundColor: s.bg,
           borderColor: s.border,
-          borderBottomColor: s.borderBottom,
         },
         animatedStyle,
       ]}
@@ -144,7 +136,10 @@ const ActionButton = ({
       accessibilityState={{ disabled, selected: isSelected }}
     >
       <View style={styles.actionButtonContent}>
-        <Ionicons name={s.iconName} size={Layout.isShortDevice ? 22 : 26} color={s.icon} />
+        {/* Filled circle icon badge (spec §6.4) */}
+        <View style={[styles.iconBadge, { backgroundColor: state === 'correct' || state === 'wrong' || state === 'selected' ? 'transparent' : 'rgba(255,255,255,0.25)' }]}>
+          <Ionicons name={s.iconName} size={Layout.isShortDevice ? 22 : 26} color={s.icon} />
+        </View>
         <Text style={[styles.actionText, urduStyle, { color: s.text }]}>{label}</Text>
       </View>
     </AnimatedPressable>
@@ -169,18 +164,13 @@ export const TrueFalse: React.FC<TrueFalseProps> = ({ data, onAnswer, disabled }
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={[styles.instructionHeader, urduStyle]}>کیا یہ صحیح ہے؟</Text>
       </View>
 
-      {/* Statement Card */}
+      {/* Statement card (spec §6.4 True/False) */}
       <View style={styles.card}>
-        {/* Decorative top accent */}
-        <View style={styles.cardAccent} />
-
         <View style={styles.wordContainer}>
-          {/* Italian row */}
           <View style={styles.langBlock}>
             <View style={styles.langLabelRow}>
               <Text style={styles.flagEmoji}>🇮🇹</Text>
@@ -189,10 +179,9 @@ export const TrueFalse: React.FC<TrueFalseProps> = ({ data, onAnswer, disabled }
             <Text style={styles.italianText}>{italian?.trim()}</Text>
           </View>
 
-          {/* Divider  */}
+          {/* Gradient divider: jade-vivid → saffron, 40px wide, 2px tall */}
           <View style={styles.cardDivider} />
 
-          {/* Urdu row */}
           <View style={styles.langBlock}>
             <View style={styles.langLabelRow}>
               <Text style={styles.flagEmoji}>🇵🇰</Text>
@@ -203,10 +192,9 @@ export const TrueFalse: React.FC<TrueFalseProps> = ({ data, onAnswer, disabled }
         </View>
       </View>
 
-      {/* Hint */}
       <Text style={[styles.hint, urduStyle]}>اوپر دیے گئے ترجمے کی تصدیق کریں</Text>
 
-      {/* Action Buttons */}
+      {/* Two full-width buttons (spec §6.4) */}
       <View style={styles.actionsContainer}>
         <ActionButton
           label="صحیح ✓"
@@ -248,24 +236,16 @@ const styles = StyleSheet.create({
   instructionHeader: {
     fontSize: Layout.isShortDevice ? 16 : 18,
     fontFamily: Fonts.extraBold,
-    color: Colors.textMid,
+    color: Colors.inkSoft,
     textAlign: 'center',
   },
   card: {
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.white,
     borderRadius: Layout.radius.xl,
     borderWidth: 1.5,
-    borderColor: Colors.border,
+    borderColor: Colors.jadeBorder08,
     overflow: 'hidden',
-    // No flex: 1 — card should be naturally sized, not expand to fill screen
-    ...Layout.shadow.card,
-    elevation: 4,
     marginBottom: Layout.isShortDevice ? Layout.spacing.sm : Layout.spacing.lg,
-  },
-  cardAccent: {
-    height: 4,
-    backgroundColor: Colors.primary,
-    opacity: 0.7,
   },
   wordContainer: {
     alignItems: 'center',
@@ -289,33 +269,34 @@ const styles = StyleSheet.create({
   },
   langLabel: {
     fontSize: 10,
-    color: Colors.textMuted,
+    color: Colors.inkMuted,
     fontFamily: Fonts.semiBold,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
   italianText: {
     fontSize: Layout.isShortDevice ? 20 : 24,
-    color: Colors.textDark,
+    color: Colors.ink,
     fontFamily: Fonts.bold,
     textAlign: 'center',
   },
+  // Spec: short gradient divider jade-vivid → saffron, 40px wide, 2px tall
   cardDivider: {
-    height: 1,
-    width: '60%',
-    backgroundColor: Colors.border,
+    height: 2,
+    width: 40,
+    backgroundColor: Colors.jadeVivid,
     borderRadius: 1,
   },
   urduText: {
     fontSize: Layout.isShortDevice ? 26 : 32,
-    color: Colors.textDark,
-    fontFamily: Fonts.urdu,
+    color: Colors.ink,
+    fontFamily: Fonts.urduBold,
     textAlign: 'center',
-    lineHeight: Layout.isShortDevice ? 38 : 46,
+    lineHeight: Layout.isShortDevice ? 38 : 50,
   },
   hint: {
     fontSize: 11,
-    color: Colors.textMuted,
+    color: Colors.inkMuted,
     fontFamily: Fonts.regular,
     textAlign: 'center',
     marginBottom: Layout.isShortDevice ? Layout.spacing.sm : Layout.spacing.md,
@@ -331,7 +312,6 @@ const styles = StyleSheet.create({
     height: Layout.isShortDevice ? 56 : 64,
     borderRadius: Layout.radius.lg,
     borderWidth: 1.5,
-    borderBottomWidth: Layout.isShortDevice ? 3 : 4,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: Layout.spacing.sm,
@@ -340,6 +320,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Layout.spacing.xs,
+  },
+  iconBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   actionText: {
     fontSize: Layout.isShortDevice ? 16 : 18,

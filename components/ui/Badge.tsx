@@ -24,12 +24,12 @@ export const Badge: React.FC<BadgeProps> = ({
   const getVariantStyles = () => {
     switch (variant) {
       case 'streak':
-        return { bg: Colors.errorLight, text: Colors.errorDark, border: Colors.error };
+        return { bg: Colors.saffronTint12, text: Colors.saffronDim, border: Colors.saffronBorder30 };
       case 'warning':
-        return { bg: Colors.warningLight, text: Colors.warningDark, border: Colors.warning };
+        return { bg: Colors.saffronTint12, text: Colors.saffronDim, border: Colors.saffronBorder30 };
       case 'neutral':
       default:
-        return { bg: Colors.background, text: Colors.textMid, border: Colors.border };
+        return { bg: Colors.creamDeep, text: Colors.inkSoft, border: Colors.jadeBorder10 };
     }
   };
 
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    borderRadius: Layout.radius.round,
+    borderRadius: Layout.radius.full,
     borderWidth: 1,
     alignSelf: 'flex-start',
   },

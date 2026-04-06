@@ -3,11 +3,23 @@ import { Storage, StorageKeys } from '../utils/storage';
 import { getSupabase, isSupabaseConfigured } from '../utils/supabase';
 import NetInfo from '@react-native-community/netinfo';
 
+export type AppLanguage = 'ur' | 'it' | 'en' | 'hi' | 'de' | 'fr';
+
+export const LANGUAGES: { code: AppLanguage; label: string; flag: string; comingSoon?: boolean }[] = [
+  { code: 'ur', label: 'Urdu', flag: '🇵🇰' },
+  { code: 'it', label: 'Italian', flag: '🇮🇹' },
+  { code: 'en', label: 'English', flag: '🇬🇧' },
+  { code: 'hi', label: 'Hindi', flag: '🇮🇳', comingSoon: true },
+  { code: 'de', label: 'German', flag: '🇩🇪', comingSoon: true },
+  { code: 'fr', label: 'French', flag: '🇫🇷', comingSoon: true },
+];
+
 export interface SettingsState {
   soundEnabled: boolean;
   dailyReminderEnabled: boolean;
   avatar: string;
   username: string;
+  language: AppLanguage;
 }
 
 export interface SettingsStore extends SettingsState {
@@ -16,6 +28,7 @@ export interface SettingsStore extends SettingsState {
   setDailyReminderEnabled: (enabled: boolean) => void;
   setAvatar: (avatar: string) => void;
   setUsername: (username: string) => void;
+  setLanguage: (language: AppLanguage) => void;
   loadSettings: () => Promise<void>;
   syncSettings: () => Promise<void>;
   resetSettings: () => void;
@@ -26,6 +39,7 @@ const defaultState: SettingsState = {
   dailyReminderEnabled: true,
   avatar: '👤',
   username: 'New Learner',
+  language: 'ur',
 };
 
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
@@ -47,6 +61,10 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     set({ username });
     Storage.set(StorageKeys.SETTINGS, get());
     get().syncSettings();
+  },
+  setLanguage: (language) => {
+    set({ language });
+    Storage.set(StorageKeys.SETTINGS, get());
   },
   syncSettings: async () => {
     if (!isSupabaseConfigured()) return;

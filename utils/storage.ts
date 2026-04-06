@@ -10,6 +10,7 @@ export const StorageKeys = {
   GUEST:       'app:guest',
   NOTIFICATION_CONFIG: 'app:notifications',
   DAILY_FIRST_OPEN:    'app:daily_first_open',
+  LANGUAGE:            'app:language',
 };
 
 export const Storage = {

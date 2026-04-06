@@ -20,7 +20,7 @@ interface SparkleProps {
 
 const Sparkle: React.FC<SparkleProps> = ({ 
   size = 10, 
-  color = Colors.gold, 
+  color = Colors.saffron,
   delay = 0,
   containerSize = 100 
 }) => {
@@ -87,7 +87,7 @@ export const SparkleGroup: React.FC<{ count?: number; size?: number }> = ({ coun
           key={i} 
           delay={i * 200} 
           containerSize={size} 
-          color={i % 2 === 0 ? Colors.gold : Colors.goldLight}
+          color={i % 2 === 0 ? Colors.saffron : Colors.saffronLight}
           size={i % 3 === 0 ? 8 : 6}
         />
       ))}

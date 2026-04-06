@@ -17,7 +17,6 @@ export const LessonPath: React.FC<LessonPathProps> = ({
   completedLessons,
   onLessonPress,
 }) => {
-  // Flatten sections and notes into a single array for stickyHeaderIndices
   const { items, stickyHeaderIndices } = useMemo(() => {
     const items: React.ReactNode[] = [];
     const stickyHeaderIndices: number[] = [];
@@ -25,22 +24,19 @@ export const LessonPath: React.FC<LessonPathProps> = ({
     let globalIndexLocal = 0;
 
     sections.forEach((section, sectionIndex) => {
-      // Add header index
       stickyHeaderIndices.push(items.length);
-      
-      // Add Header
+
       items.push(
         <View key={`header-${section.id}`} style={styles.stickyHeaderWrapper}>
-          <SectionHeader 
-            title={section.title} 
-            subtitle={section.subtitle} 
-            index={sectionIndex + 1} 
+          <SectionHeader
+            title={section.title}
+            subtitle={section.subtitle}
+            index={sectionIndex + 1}
             icon={section.icon}
           />
         </View>
       );
 
-      // Add Lessons container
       items.push(
         <View key={`lessons-${section.id}`} style={styles.lessonsContainer}>
           {section.lessons.map((lesson) => {
@@ -76,8 +72,8 @@ export const LessonPath: React.FC<LessonPathProps> = ({
   }, [sections, completedLessons, onLessonPress]);
 
   return (
-    <ScrollView 
-      contentContainerStyle={styles.container} 
+    <ScrollView
+      contentContainerStyle={styles.container}
       showsVerticalScrollIndicator={false}
       stickyHeaderIndices={stickyHeaderIndices}
       scrollEventThrottle={16}
@@ -85,7 +81,6 @@ export const LessonPath: React.FC<LessonPathProps> = ({
       removeClippedSubviews={Platform.OS === 'android'}
     >
       {items}
-      {/* Spacer at the bottom */}
       <View style={{ height: 100 }} />
     </ScrollView>
   );
@@ -96,7 +91,7 @@ const styles = StyleSheet.create({
     paddingBottom: Layout.spacing.xxl,
   },
   stickyHeaderWrapper: {
-    backgroundColor: Colors.background, // Match app background to hide underlying elements
+    backgroundColor: Colors.cream,
     zIndex: 10,
   },
   lessonsContainer: {

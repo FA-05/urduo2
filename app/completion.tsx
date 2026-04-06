@@ -143,8 +143,8 @@ export default function LessonCompleteScreen() {
         <View style={styles.statsRow}>
           {/* CORRECT */}
           <Animated.View style={[styles.statItem, getCardStyle(card1Y)]}>
-            <Ionicons name="checkmark-circle" size={24} color={Colors.primary} />
-            <Text style={[styles.statValue, { color: Colors.primary }]}>{correctAnswers}/{totalQuestions || '?'}</Text>
+            <Ionicons name="checkmark-circle" size={24} color={Colors.jadeVivid} />
+            <Text style={[styles.statValue, { color: Colors.jadeVivid }]}>{correctAnswers}/{totalQuestions || '?'}</Text>
             <Text style={styles.statLabel}>CORRECT</Text>
           </Animated.View>
 
@@ -152,8 +152,8 @@ export default function LessonCompleteScreen() {
 
           {/* SCORE */}
           <Animated.View style={[styles.statItem, getCardStyle(card2Y)]}>
-            <Ionicons name="star" size={24} color={Colors.goldDark} />
-            <Text style={[styles.statValue, { color: Colors.goldDark }]}>{score}%</Text>
+            <Ionicons name="star" size={24} color={Colors.saffronDim} />
+            <Text style={[styles.statValue, { color: Colors.saffronDim }]}>{score}%</Text>
             <Text style={styles.statLabel}>SCORE</Text>
           </Animated.View>
 
@@ -161,8 +161,8 @@ export default function LessonCompleteScreen() {
 
           {/* LIVES */}
           <Animated.View style={[styles.statItem, getCardStyle(card1Y)]}>
-            <Ionicons name="heart" size={24} color={Colors.error} />
-            <Text style={[styles.statValue, { color: Colors.error }]}>{hearts}/{MAX_HEARTS}</Text>
+            <Ionicons name="heart" size={24} color={Colors.rose} />
+            <Text style={[styles.statValue, { color: Colors.rose }]}>{hearts}/{MAX_HEARTS}</Text>
             <Text style={styles.statLabel}>LIVES</Text>
           </Animated.View>
         </View>
@@ -203,7 +203,7 @@ export default function LessonCompleteScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.cream,
   },
   content: {
     flex: 1,
@@ -229,13 +229,13 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: Fonts.extraBold,
     fontSize: 28,
-    color: Colors.textDark,
+    color: Colors.ink,
     textAlign: 'center',
-    marginBottom: Layout.spacing.xs2,
+    marginBottom: Layout.spacing.xs,
   },
   subtitle: {
     fontSize: 24,
-    color: Colors.textMid,
+    color: Colors.inkSoft,
     textAlign: 'center',
   },
   statsRow: {
@@ -247,28 +247,27 @@ const styles = StyleSheet.create({
     paddingVertical: Layout.spacing.lg,
     paddingHorizontal: Layout.spacing.md,
     width: '100%',
-    ...Layout.shadow.card,
   },
   statItem: {
     flex: 1,
     alignItems: 'center',
-    gap: Layout.spacing.xs2,
+    gap: Layout.spacing.xs,
   },
   statValue: {
     fontFamily: Fonts.extraBold,
     fontSize: 20,
-    marginTop: Layout.spacing.xs2,
+    marginTop: Layout.spacing.xs,
   },
   statLabel: {
     fontFamily: Fonts.bold,
     fontSize: 10,
-    color: Colors.textMuted,
+    color: Colors.inkMuted,
     letterSpacing: 0.5,
   },
   verticalDivider: {
     width: 1,
     height: 40,
-    backgroundColor: Colors.border,
+    backgroundColor: Colors.jadeBorder10,
   },
   actionsContainer: {
     width: '100%',

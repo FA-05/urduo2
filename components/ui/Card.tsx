@@ -25,15 +25,13 @@ export const Card: React.FC<CardProps> = ({ children, style, surface = false }) 
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.cardBg,
+    backgroundColor: Colors.white,
     borderRadius: Layout.radius.lg,
     padding: Layout.spacing.lg,
     borderWidth: 1.5,
-    borderColor: Colors.border,
-    borderBottomWidth: 3,
-    ...Layout.shadow.card,
+    borderColor: Colors.jadeBorder08,
   },
   surfacing: {
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.cream,
   },
 });

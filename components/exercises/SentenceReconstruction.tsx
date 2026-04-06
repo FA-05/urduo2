@@ -26,7 +26,7 @@ const WordChip = ({
   word,
   onPress,
   disabled,
-  variant = 'bank', // 'bank' | 'selected' | 'used'
+  variant = 'bank',
   isUrdu = false,
 }: {
   word: string;
@@ -48,24 +48,22 @@ const WordChip = ({
     transform: [{ scale: scale.value }],
   }));
 
+  // Spec §6.4 Sentence Builder
   const chipStyles = {
     bank: {
       bg: Colors.white,
-      border: Colors.border,
-      borderBottom: Colors.borderDark,
-      text: Colors.textDark,
+      border: Colors.jadeBorder15,
+      text: Colors.ink,
     },
     selected: {
-      bg: Colors.indigoLight,
-      border: Colors.indigo,
-      borderBottom: Colors.indigoDark,
-      text: Colors.indigoDark,
+      bg: Colors.jadeTint10,
+      border: Colors.jadeVivid,
+      text: Colors.jadeDim,
     },
     used: {
-      bg: Colors.background,
-      border: Colors.border,
-      borderBottom: Colors.border,
-      text: 'transparent',
+      bg: Colors.creamDeep,
+      border: Colors.jadeBorder08,
+      text: 'transparent' as string,
     },
   };
 
@@ -82,7 +80,6 @@ const WordChip = ({
         {
           backgroundColor: s.bg,
           borderColor: s.border,
-          borderBottomColor: s.borderBottom,
           opacity: variant === 'used' ? 0.35 : 1,
         },
         animatedStyle,
@@ -143,26 +140,20 @@ export const SentenceReconstruction: React.FC<SentenceReconstructionProps> = ({
   };
 
   const isUrduBank = data.direction === 'it-to-ur';
-  const isUrduQuestion = data.direction === 'ur-to-it';
-
-  const sourceLang = isUrduQuestion ? { flag: '🇵🇰', label: 'اردو' } : { flag: '🇮🇹', label: 'Italiano' };
-  const targetLang = isUrduBank ? { flag: '🇮🇹', label: 'Italiano' } : { flag: '🇵🇰', label: 'اردو' };
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={[styles.instruction, urduStyle]}>ترجمہ مکمل کریں</Text>
       </View>
 
-      {/* Question Card */}
       <View style={styles.questionCard}>
-        <Text style={[styles.questionText, isUrduQuestion && urduStyle]}>
+        <Text style={[styles.questionText, data.direction === 'ur-to-it' && urduStyle]}>
           {data.question}
         </Text>
       </View>
 
-      {/* Answer Slot */}
+      {/* Answer slot — spec: dashed border rgba-jade-25, r-lg, rgba-white-70 bg */}
       <View style={styles.slotSection}>
         <View style={styles.slotBox}>
           {selectedWords.length === 0 ? (
@@ -186,7 +177,7 @@ export const SentenceReconstruction: React.FC<SentenceReconstructionProps> = ({
         </View>
       </View>
 
-      {/* Word Bank */}
+      {/* Word bank — spec: white fill chips, rgba-jade-15 border, r-sm */}
       <View style={styles.bankSection}>
         <View style={styles.bankGrid}>
           {availableWords.map((wordObj) => (
@@ -199,7 +190,6 @@ export const SentenceReconstruction: React.FC<SentenceReconstructionProps> = ({
               isUrdu={isUrduBank}
             />
           ))}
-          {/* Ghost chips for used words to maintain layout */}
           {selectedWords.map((wordObj) => (
             <WordChip
               key={`ghost-${wordObj.id}`}
@@ -213,7 +203,6 @@ export const SentenceReconstruction: React.FC<SentenceReconstructionProps> = ({
         </View>
       </View>
 
-      {/* Footer */}
       <View style={styles.footer}>
         <Button
           title="چیک کریں"
@@ -242,24 +231,21 @@ const styles = StyleSheet.create({
   },
   instruction: {
     fontSize: Layout.isShortDevice ? 17 : 20,
-    color: Colors.textMid,
+    color: Colors.inkSoft,
     fontFamily: Fonts.extraBold,
     textAlign: 'center',
   },
   questionCard: {
     padding: Layout.isShortDevice ? Layout.spacing.md : Layout.spacing.lg,
-    backgroundColor: Colors.surface,
-    borderRadius: Layout.radius.xl,
+    backgroundColor: Colors.white,
+    borderRadius: Layout.radius.lg,
     borderWidth: 1.5,
-    borderColor: Colors.border,
+    borderColor: Colors.jadeBorder08,
     alignItems: 'center',
-    gap: Layout.isShortDevice ? 4 : 8,
-    ...Layout.shadow.card,
-    elevation: 3,
   },
   questionText: {
     fontSize: Layout.isShortDevice ? 19 : 24,
-    color: Colors.textDark,
+    color: Colors.ink,
     fontFamily: Fonts.bold,
     textAlign: 'center',
   },
@@ -268,10 +254,10 @@ const styles = StyleSheet.create({
   },
   slotBox: {
     minHeight: Layout.isShortDevice ? 56 : 68,
-    backgroundColor: Colors.background,
+    backgroundColor: 'rgba(255,255,255,0.70)',
     borderRadius: Layout.radius.lg,
     borderWidth: 2,
-    borderColor: Colors.borderDark,
+    borderColor: Colors.jadeBorder25,
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
@@ -288,7 +274,7 @@ const styles = StyleSheet.create({
   slotPlaceholder: {
     fontFamily: Fonts.regular,
     fontSize: 13,
-    color: Colors.textMuted,
+    color: Colors.inkMuted,
     fontStyle: 'italic',
   },
   bankSection: {
@@ -304,23 +290,21 @@ const styles = StyleSheet.create({
   },
   chip: {
     borderWidth: 1.5,
-    borderBottomWidth: 3,
-    borderRadius: Layout.radius.md,
+    borderRadius: Layout.radius.sm,
     paddingHorizontal: Layout.isShortDevice ? Layout.spacing.sm : Layout.spacing.md,
     paddingVertical: Layout.isShortDevice ? 6 : Layout.spacing.sm,
     minWidth: 48,
     alignItems: 'center',
     justifyContent: 'center',
-    ...Layout.shadow.xs,
   },
   chipText: {
     fontSize: Layout.isShortDevice ? 15 : 17,
-    color: Colors.textDark,
+    color: Colors.ink,
     fontFamily: Fonts.semiBold,
     textAlign: 'center',
   },
   selectedChipText: {
-    color: Colors.indigoDark,
+    color: Colors.jadeDim,
     fontFamily: Fonts.bold,
   },
   footer: {

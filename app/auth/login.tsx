@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   StyleSheet,
   ScrollView,
   KeyboardAvoidingView,
@@ -12,17 +11,11 @@ import {
 } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { 
-  FadeInUp, 
-  FadeInDown, 
-  useAnimatedStyle, 
-  interpolateColor, 
-  useSharedValue, 
-  withTiming 
-} from 'react-native-reanimated';
+import Animated, { FadeInUp, FadeInDown } from 'react-native-reanimated';
 import { getSupabase } from '../../utils/supabase';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
+import { FormInput } from '../../components/ui/FormInput';
 import { StatusModal } from '../../components/ui/StatusModal';
 import { Colors } from '../../constants/colors';
 import { Fonts } from '../../constants/fonts';
@@ -35,7 +28,6 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [focusedInput, setFocusedInput] = useState<string | null>(null);
 
   // Status Modal State
   const [statusVisible, setStatusVisible] = useState(false);
@@ -50,33 +42,6 @@ export default function LoginScreen() {
   });
 
   const router = useRouter();
-
-  // Animated focus values
-  const emailFocus = useSharedValue(0);
-  const passwordFocus = useSharedValue(0);
-
-  const emailInputStyle = useAnimatedStyle(() => ({
-    borderColor: interpolateColor(
-      emailFocus.value,
-      [0, 1],
-      [Colors.border, Colors.primary]
-    ),
-    backgroundColor: interpolateColor(
-      emailFocus.value,
-      [0, 1],
-      ['#FFFFFF', '#FFFFFF'] // Transitioning background if needed
-    ),
-    transform: [{ scale: withTiming(emailFocus.value ? 1.01 : 1, { duration: 200 }) }]
-  }));
-
-  const passwordInputStyle = useAnimatedStyle(() => ({
-    borderColor: interpolateColor(
-      passwordFocus.value,
-      [0, 1],
-      [Colors.border, Colors.primary]
-    ),
-    transform: [{ scale: withTiming(passwordFocus.value ? 1.01 : 1, { duration: 200 }) }]
-  }));
 
   const showError = (title: string, message: string) => {
     setStatusConfig({ type: 'error', title, message });
@@ -111,7 +76,7 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <LinearGradient
-        colors={[Colors.primary, Colors.primaryDark]}
+        colors={[Colors.jade, Colors.jadeDim]}
         style={StyleSheet.absoluteFill}
       />
 
@@ -140,73 +105,29 @@ export default function LoginScreen() {
           entering={FadeInUp.delay(400).duration(800).springify()}
         >
           <Card style={styles.formCard}>
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Email Address</Text>
-              <Animated.View style={[
-                styles.inputWrapper,
-                emailInputStyle
-              ]}>
-                <Ionicons 
-                  name="mail-outline" 
-                  size={20} 
-                  color={focusedInput === 'email' ? Colors.primary : Colors.textMuted} 
-                  style={styles.inputIcon} 
-                />
-                <TextInput
-                  style={styles.input}
-                  value={email}
-                  onChangeText={setEmail}
-                  onFocus={() => {
-                    setFocusedInput('email');
-                    emailFocus.value = withTiming(1);
-                  }}
-                  onBlur={() => {
-                    setFocusedInput(null);
-                    emailFocus.value = withTiming(0);
-                  }}
-                  placeholder="example@email.com"
-                  placeholderTextColor={Colors.textDisabled}
-                  autoCapitalize="none"
-                  keyboardType="email-address"
-                />
-              </Animated.View>
-            </View>
+            <FormInput
+              label="Email Address"
+              icon="mail-outline"
+              value={email}
+              onChangeText={setEmail}
+              placeholder="example@email.com"
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
 
-            <View style={styles.inputContainer}>
-              <View style={styles.labelRow}>
-                <Text style={styles.label}>Password</Text>
+            <FormInput
+              label="Password"
+              icon="lock-closed-outline"
+              value={password}
+              onChangeText={setPassword}
+              placeholder="••••••••"
+              secureTextEntry
+              labelRight={
                 <Pressable>
                   <Text style={styles.forgotPasswordTextSmall}>Forgot?</Text>
                 </Pressable>
-              </View>
-              <Animated.View style={[
-                styles.inputWrapper,
-                passwordInputStyle
-              ]}>
-                <Ionicons 
-                  name="lock-closed-outline" 
-                  size={20} 
-                  color={focusedInput === 'password' ? Colors.primary : Colors.textMuted} 
-                  style={styles.inputIcon} 
-                />
-                <TextInput
-                  style={styles.input}
-                  value={password}
-                  onChangeText={setPassword}
-                  onFocus={() => {
-                    setFocusedInput('password');
-                    passwordFocus.value = withTiming(1);
-                  }}
-                  onBlur={() => {
-                    setFocusedInput(null);
-                    passwordFocus.value = withTiming(0);
-                  }}
-                  placeholder="••••••••"
-                  placeholderTextColor={Colors.textDisabled}
-                  secureTextEntry
-                />
-              </Animated.View>
-            </View>
+              }
+            />
 
             <Button
               title="Log In"
@@ -229,9 +150,9 @@ export default function LoginScreen() {
               ]}
             >
               <View style={styles.guestButtonContent}>
-                <Ionicons name="person-outline" size={18} color={Colors.textMid} style={{ marginRight: 8 }} />
+                <Ionicons name="person-outline" size={18} color={Colors.inkSoft} style={{ marginRight: 8 }} />
                 <Text style={styles.guestButtonText}>Continue as Guest</Text>
-                <Ionicons name="chevron-forward" size={16} color={Colors.textMuted} style={{ marginLeft: 4 }} />
+                <Ionicons name="chevron-forward" size={16} color={Colors.inkMuted} style={{ marginLeft: 4 }} />
               </View>
             </Pressable>
 
@@ -307,62 +228,21 @@ const styles = StyleSheet.create({
     padding: Layout.spacing.lg,
     borderRadius: 24,
     ...Layout.shadow.elevated,
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.white,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.5)',
-  },
-  inputContainer: {
-    marginBottom: Layout.spacing.md,
-  },
-  labelRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Layout.spacing.xs,
-  },
-  label: {
-    fontSize: 14,
-    fontFamily: Fonts.bold,
-    color: Colors.textDark,
-    marginLeft: 4,
-    marginBottom: 4,
   },
   forgotPasswordTextSmall: {
     fontSize: 13,
     fontFamily: Fonts.bold,
-    color: Colors.primary,
+    color: Colors.jade,
     marginRight: 4,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: 54,
-    borderWidth: 2,
-    borderColor: Colors.border,
-    borderRadius: 12,
-    paddingHorizontal: Layout.spacing.md,
-    backgroundColor: Colors.white,
-  },
-  focusedInput: {
-    borderColor: Colors.primary,
-    backgroundColor: Colors.white,
-    ...Layout.shadow.card,
-  },
-  inputIcon: {
-    marginRight: Layout.spacing.sm,
-  },
-  input: {
-    flex: 1,
-    height: '100%',
-    fontSize: 16,
-    fontFamily: Fonts.regular,
-    color: Colors.textDark,
   },
   loginButton: {
     height: 54,
     borderRadius: 12,
     marginTop: 4,
-    shadowColor: Colors.primary,
+    shadowColor: Colors.jade,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 6,
@@ -376,11 +256,11 @@ const styles = StyleSheet.create({
   divider: {
     flex: 1,
     height: 1,
-    backgroundColor: Colors.border,
+    backgroundColor: Colors.jadeBorder10,
   },
   dividerText: {
     marginHorizontal: Layout.spacing.md,
-    color: Colors.textMuted,
+    color: Colors.inkMuted,
     fontFamily: Fonts.bold,
     fontSize: 12,
   },
@@ -388,7 +268,7 @@ const styles = StyleSheet.create({
     marginBottom: Layout.spacing.md,
     borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: Colors.border,
+    borderColor: Colors.jadeBorder10,
     paddingVertical: 12,
     backgroundColor: 'transparent',
   },
@@ -398,7 +278,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   guestButtonText: {
-    color: Colors.textMid,
+    color: Colors.inkSoft,
     fontFamily: Fonts.bold,
     fontSize: 15,
   },
@@ -409,12 +289,12 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   footerText: {
-    color: Colors.textMid,
+    color: Colors.inkSoft,
     fontSize: 15,
     fontFamily: Fonts.regular,
   },
   link: {
-    color: Colors.primary,
+    color: Colors.jade,
     fontFamily: Fonts.extraBold,
     fontSize: 15,
   },

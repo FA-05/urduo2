@@ -1,33 +1,33 @@
-import React from 'react';
-import { 
-  Pressable, 
-  Text, 
-  StyleSheet, 
-  ViewStyle, 
-  TextStyle, 
+import React from "react";
+import {
+  Pressable,
+  Text,
+  StyleSheet,
+  ViewStyle,
+  TextStyle,
   ActivityIndicator,
-  StyleProp 
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+  StyleProp,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
-} from 'react-native-reanimated';
-import { Colors } from '../../constants/colors';
-import { Fonts } from '../../constants/fonts';
-import { Layout } from '../../constants/layout';
-import * as Haptics from 'expo-haptics';
+} from "react-native-reanimated";
+import { Colors } from "../../constants/colors";
+import { Fonts } from "../../constants/fonts";
+import { Layout } from "../../constants/layout";
+import * as Haptics from "expo-haptics";
 
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'danger' | 'outline' | 'ghost';
+  variant?: "primary" | "secondary" | "danger" | "outline" | "ghost";
   disabled?: boolean;
   loading?: boolean;
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   icon?: keyof typeof Ionicons.glyphMap;
   iconSize?: number;
   iconColor?: string;
@@ -38,12 +38,12 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 export const Button: React.FC<ButtonProps> = ({
   title,
   onPress,
-  variant = 'primary',
+  variant = "primary",
   disabled = false,
   loading = false,
   style,
   textStyle,
-  size = 'md',
+  size = "md",
   icon,
   iconSize,
   iconColor,
@@ -52,40 +52,32 @@ export const Button: React.FC<ButtonProps> = ({
 
   const getColors = () => {
     switch (variant) {
-      case 'primary':
+      case "primary":
         return {
-          bg: Colors.primary,
-          border: Colors.primaryDark,
+          bg: Colors.jadeVivid,
+          border: Colors.jade,
           text: Colors.white,
         };
-      case 'secondary':
-        return {
-          bg: Colors.indigo,
-          border: Colors.indigoDark,
-          text: Colors.white,
-        };
-      case 'danger':
-        return {
-          bg: Colors.error,
-          border: Colors.errorDark,
-          text: Colors.white,
-        };
-      case 'outline':
+      case "secondary":
+        return { bg: Colors.indigo, border: "#4338CA", text: Colors.white };
+      case "danger":
+        return { bg: Colors.rose, border: Colors.roseDim, text: Colors.white };
+      case "outline":
         return {
           bg: Colors.white,
-          border: Colors.borderDark,
-          text: Colors.textMid,
+          border: Colors.jadeBorder20,
+          text: Colors.inkSoft,
         };
-      case 'ghost':
+      case "ghost":
         return {
-          bg: 'transparent',
-          border: 'transparent',
-          text: Colors.textMid,
+          bg: "transparent",
+          border: "transparent",
+          text: Colors.inkSoft,
         };
       default:
         return {
-          bg: Colors.primary,
-          border: Colors.primaryDark,
+          bg: Colors.jadeVivid,
+          border: Colors.jade,
           text: Colors.white,
         };
     }
@@ -95,25 +87,24 @@ export const Button: React.FC<ButtonProps> = ({
 
   const getSizeStyles = () => {
     switch (size) {
-      case 'sm':
+      case "sm":
         return {
-          paddingVertical: Layout.spacing.sm,
-          paddingHorizontal: Layout.spacing.md,
+          paddingVertical: 8,
+          paddingHorizontal: 16,
           fontSize: 14,
           minHeight: 40,
         };
-      case 'lg':
+      case "lg":
         return {
-          paddingVertical: 15,
-          paddingHorizontal: Layout.spacing.xl,
+          paddingVertical: 16,
+          paddingHorizontal: 32,
           fontSize: 18,
           minHeight: 56,
         };
-      case 'md':
       default:
         return {
           paddingVertical: 13,
-          paddingHorizontal: Layout.spacing.lg,
+          paddingHorizontal: 24,
           fontSize: 16,
           minHeight: 48,
         };
@@ -124,7 +115,7 @@ export const Button: React.FC<ButtonProps> = ({
 
   const handlePressIn = () => {
     if (disabled || loading) return;
-    scale.value = withTiming(0.97, { duration: 80 });
+    scale.value = withTiming(0.98, { duration: 120 });
   };
 
   const handlePressOut = () => {
@@ -141,7 +132,7 @@ export const Button: React.FC<ButtonProps> = ({
     transform: [{ scale: scale.value }],
   }));
 
-  const isInteractionDisabled = disabled || loading;
+  const off = disabled || loading;
 
   return (
     <AnimatedPressable
@@ -151,19 +142,20 @@ export const Button: React.FC<ButtonProps> = ({
       style={[
         styles.container,
         {
-          backgroundColor: isInteractionDisabled ? Colors.border : colors.bg,
-          borderColor: isInteractionDisabled ? Colors.borderDark : colors.border,
+          backgroundColor: off ? Colors.lockedFill : colors.bg,
+          borderColor: off ? Colors.lockedShadow : colors.border,
           paddingVertical: sizeStyles.paddingVertical,
           paddingHorizontal: sizeStyles.paddingHorizontal,
           minHeight: sizeStyles.minHeight,
-          opacity: isInteractionDisabled ? 0.6 : 1,
+          opacity: off ? 0.6 : 1,
         },
+        variant === "primary" && !off && Layout.shadow.btn,
         animatedStyle,
         style,
       ]}
-      android_ripple={isInteractionDisabled ? null : { color: 'rgba(0,0,0,0.08)' }}
+      android_ripple={off ? null : { color: "rgba(0,0,0,0.08)" }}
       accessibilityRole="button"
-      accessibilityState={{ disabled: isInteractionDisabled }}
+      accessibilityState={{ disabled: off }}
       hitSlop={Layout.hitSlop}
     >
       {loading ? (
@@ -173,15 +165,18 @@ export const Button: React.FC<ButtonProps> = ({
           {icon && (
             <Ionicons
               name={icon}
-              size={iconSize || (size === 'sm' ? 18 : size === 'lg' ? 24 : 20)}
-              color={iconColor || (isInteractionDisabled ? Colors.textMuted : colors.text)}
-              style={{ marginRight: Layout.spacing.sm }}
+              size={iconSize || (size === "sm" ? 18 : size === "lg" ? 24 : 20)}
+              color={iconColor || (off ? Colors.inkMuted : colors.text)}
+              style={{ marginRight: 8 }}
             />
           )}
           <Text
             style={[
               styles.text,
-              { color: isInteractionDisabled ? Colors.textMuted : colors.text, fontSize: sizeStyles.fontSize },
+              {
+                color: off ? Colors.inkMuted : colors.text,
+                fontSize: sizeStyles.fontSize,
+              },
               textStyle,
             ]}
           >
@@ -193,19 +188,17 @@ export const Button: React.FC<ButtonProps> = ({
   );
 };
 
-
 const styles = StyleSheet.create({
   container: {
-    borderRadius: Layout.radius.xl,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
+    borderRadius: Layout.radius.lg,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
     borderWidth: 1.5,
     borderBottomWidth: 3,
-    ...Layout.shadow.button,
   },
   text: {
-    fontFamily: Fonts.extraBold,
+    fontFamily: Fonts.bold,
     letterSpacing: 0.4,
   },
 });

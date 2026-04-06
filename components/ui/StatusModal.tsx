@@ -27,11 +27,11 @@ export const StatusModal: React.FC<StatusModalProps> = ({
   const getIcon = () => {
     switch (type) {
       case 'success':
-        return { name: 'checkmark-circle' as const, color: Colors.primary };
+        return { name: 'checkmark-circle' as const, color: Colors.jadeVivid };
       case 'error':
-        return { name: 'alert-circle' as const, color: Colors.error };
+        return { name: 'alert-circle' as const, color: Colors.rose };
       case 'info':
-        return { name: 'information-circle' as const, color: Colors.info };
+        return { name: 'information-circle' as const, color: Colors.sky };
     }
   };
 
@@ -73,14 +73,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontFamily: Fonts.extraBold,
-    color: Colors.textDark,
+    color: Colors.ink,
     marginBottom: Layout.spacing.sm,
     textAlign: 'center',
   },
   message: {
     fontSize: 16,
     fontFamily: Fonts.regular,
-    color: Colors.textMid,
+    color: Colors.inkSoft,
     textAlign: 'center',
     marginBottom: Layout.spacing.xxl,
     lineHeight: 24,

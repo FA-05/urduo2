@@ -89,16 +89,15 @@ const styles = StyleSheet.create({
   },
   modalView: {
     backgroundColor: Colors.white,
-    borderRadius: Layout.radius.xxl,
+    borderRadius: Layout.radius.xl,
     padding: Layout.spacing.xl,
     alignItems: 'center',
-    ...Layout.shadow.card,
   },
   iconContainer: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: Colors.errorLight,
+    backgroundColor: Colors.roseTint10,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: Layout.spacing.lg,
@@ -109,26 +108,26 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontFamily: Fonts.extraBold,
     fontSize: 24,
-    color: Colors.textDark,
+    color: Colors.ink,
     textAlign: 'center',
   },
   urduTitle: {
     fontSize: 24,
-    color: Colors.textDark,
+    color: Colors.ink,
     textAlign: 'center',
     marginBottom: Layout.spacing.md,
   },
   modalText: {
     fontFamily: Fonts.regular,
     fontSize: 14,
-    color: Colors.textMid,
+    color: Colors.inkSoft,
     textAlign: 'center',
     marginBottom: Layout.spacing.xs,
     paddingHorizontal: Layout.spacing.sm,
   },
   urduText: {
     fontSize: 14,
-    color: Colors.textMid,
+    color: Colors.inkSoft,
     textAlign: 'center',
     marginBottom: Layout.spacing.xl,
     paddingHorizontal: Layout.spacing.sm,
@@ -147,11 +146,11 @@ const styles = StyleSheet.create({
   skipButtonText: {
     fontFamily: Fonts.bold,
     fontSize: 16,
-    color: Colors.textMuted,
+    color: Colors.inkMuted,
   },
   skipUrdu: {
     fontSize: 14,
-    color: Colors.textMuted,
+    color: Colors.inkMuted,
     marginTop: 2,
   },
 });

@@ -1,47 +1,62 @@
 import React, { useEffect } from 'react';
-import { View, StyleSheet, Text, Pressable, Image, Platform } from 'react-native';
+import { View, StyleSheet, Text, Pressable, ScrollView, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import { Ionicons } from '@expo/vector-icons';
 import { useProgress } from '../../hooks/useProgress';
 import { useHearts, MAX_HEARTS } from '../../hooks/useHearts';
 import { useSettingsStore } from '../../store/settingsStore';
-import { lessonsData } from '../../data';
-import { LessonPath } from '../../components/home/LessonPath';
+import { orderedSectionsMeta } from '../../data/registry-meta';
 import { StreakWidget } from '../../components/home/StreakWidget';
-import { Modal } from '../../components/ui/Modal';
+import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
+import { Modal } from '../../components/ui/Modal';
+import { StatCard } from '../../components/ui/StatCard';
+import { ActionCard } from '../../components/ui/ActionCard';
 import { Colors } from '../../constants/colors';
-import { Fonts } from '../../constants/fonts';
+import { Fonts, TypeScale } from '../../constants/fonts';
 import { Layout } from '../../constants/layout';
 
 export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const { completedLessons, streak, loadProgress } = useProgress();
+  const {
+    completedLessons,
+    streak,
+    longestStreak,
+    totalExercises,
+    correctExercises,
+    masteredWords,
+    weakWords,
+    loadProgress,
+  } = useProgress();
   const { hearts, timeUntilNextHeart } = useHearts();
-  const { loadSettings } = useSettingsStore();
+  const { username, avatar, loadSettings } = useSettingsStore();
 
-
-  const [showHeartsModal, setShowHeartsModal] = React.useState(false);
   const [showStreakModal, setShowStreakModal] = React.useState(false);
+  const [showHeartsModal, setShowHeartsModal] = React.useState(false);
 
-  // Kick off background loads — these are no-ops if _layout already ran them.
-  // They return fast (local storage only); Supabase sync is fire-and-forget.
   useEffect(() => {
     loadProgress();
     loadSettings();
-    // loadHearts is handled by useHearts's own internal useEffect
   }, []);
 
-  const handleLessonPress = (id: string, status: 'completed' | 'active' | 'locked') => {
-    if (status === 'locked') return;
-    if (hearts === 0) {
-      setShowHeartsModal(true);
-      return;
-    }
-    router.push(`/lesson/${id}`);
-  };
+  // Derive stats
+  const allLessons = orderedSectionsMeta.flatMap((s) => s.lessons);
+  const totalLessons = allLessons.length;
+  const completedCount = completedLessons.length;
+  const accuracy =
+    totalExercises > 0 ? Math.round((correctExercises / totalExercises) * 100) : 0;
+
+  // Find next lesson to continue
+  const nextLesson = allLessons.find((l) => !completedLessons.includes(l.id));
+
+  // Find which section the next lesson belongs to
+  const currentSection = nextLesson
+    ? orderedSectionsMeta.find((s) => s.lessons.some((l) => l.id === nextLesson.id))
+    : null;
 
   const formatTime = (ms: number) => {
     const minutes = Math.floor(ms / 60000);
@@ -49,41 +64,171 @@ export default function HomeScreen() {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
+  const handleContinue = () => {
+    if (!nextLesson) return;
+    if (hearts === 0) {
+      setShowHeartsModal(true);
+      return;
+    }
+    router.push(`/lesson/${nextLesson.id}`);
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* ── Header ── */}
+      {/* Header */}
       <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <View style={styles.brand}>
-            <Image
-              source={require('../../assets/images/logo.png')}
-              style={styles.navbarLogo}
-              resizeMode="contain"
-            />
-            <Text style={styles.appTitle}>URDUO</Text>
-          </View>
-          <View style={styles.headerActions}>
-            <StreakWidget streak={streak} onPress={() => setShowStreakModal(true)} />
-            <Pressable
-              style={styles.heartsBadge}
-              onPress={() => setShowHeartsModal(true)}
-              hitSlop={Layout.hitSlop}
-            >
-              <Text style={styles.heartsIcon}>❤️</Text>
-              <Text style={styles.heartsCount}>{hearts}</Text>
-            </Pressable>
-          </View>
+        <Image
+          source={require('../../assets/images/logo.png')}
+          style={styles.mascot}
+          resizeMode="contain"
+        />
+        <View style={styles.headerRight}>
+        <StreakWidget streak={streak} onPress={() => setShowStreakModal(true)} />
+        <Pressable
+          style={styles.heartsBadge}
+          onPress={() => setShowHeartsModal(true)}
+          hitSlop={Layout.hitSlop}
+        >
+          <Text style={styles.heartsIcon}>❤️</Text>
+          <Text style={styles.heartsCount}>{hearts}</Text>
+        </Pressable>
         </View>
       </View>
 
-      {/* ── Lesson path ── */}
-      <LessonPath
-        sections={lessonsData}
-        completedLessons={completedLessons}
-        onLessonPress={handleLessonPress}
-      />
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 80 }]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Welcome / Continue Card */}
+        <Animated.View entering={FadeInDown.delay(100).duration(500).springify()}>
+          <Card style={styles.continueCard}>
+            <View style={styles.continueHeader}>
+              <View style={styles.continueInfo}>
+                <Text style={styles.welcomeText}>
+                  {completedCount > 0 ? 'Continue Learning' : 'Start Learning'}
+                </Text>
+                {nextLesson ? (
+                  <>
+                    <Text style={styles.lessonTitle}>{nextLesson.title}</Text>
+                    {currentSection && (
+                      <Text style={styles.sectionLabel}>
+                        {currentSection.subtitle}
+                      </Text>
+                    )}
+                  </>
+                ) : (
+                  <Text style={styles.lessonTitle}>All lessons completed!</Text>
+                )}
+              </View>
+            </View>
+            {nextLesson && (
+              <Button
+                title="Continue"
+                onPress={handleContinue}
+                icon="play"
+                style={styles.continueButton}
+              />
+            )}
+          </Card>
+        </Animated.View>
 
-      {/* ── Hearts Modal ── */}
+        {/* Stats Row */}
+        <Animated.View
+          entering={FadeInDown.delay(200).duration(500).springify()}
+          style={styles.statsRow}
+        >
+          <StatCard value={completedCount} label="Lessons" />
+          <StatCard value={`${accuracy}%`} label="Accuracy" />
+          <StatCard value={masteredWords.length} label="Words" />
+        </Animated.View>
+
+        {/* Quick Actions */}
+        <Animated.View entering={FadeInDown.delay(300).duration(500).springify()}>
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <View style={styles.actionsRow}>
+            <ActionCard
+              label="Lesson Path"
+              icon="map-outline"
+              iconColor={Colors.jade}
+              iconBg={Colors.jadeTint12}
+              onPress={() => router.push('/(tabs)/path')}
+            />
+            <ActionCard
+              label="Vocabulary"
+              icon="book-outline"
+              iconColor={Colors.saffron}
+              iconBg={Colors.saffronTint12}
+              onPress={() => router.push('/(tabs)/vocabulary')}
+            />
+            <ActionCard
+              label="Profile"
+              icon="person-outline"
+              iconColor={Colors.indigo}
+              iconBg={Colors.jadeTint12}
+              onPress={() => router.push('/(tabs)/profile')}
+            />
+          </View>
+        </Animated.View>
+
+        {/* Words to Review */}
+        {weakWords.length > 0 && (
+          <Animated.View entering={FadeInDown.delay(400).duration(500).springify()}>
+            <Pressable
+              style={styles.reviewCard}
+              onPress={() => router.push('/(tabs)/vocabulary')}
+            >
+              <View style={styles.reviewLeft}>
+                <View style={styles.reviewIconWrap}>
+                  <Ionicons name="refresh-outline" size={20} color={Colors.saffron} />
+                </View>
+                <View>
+                  <Text style={styles.reviewTitle}>Words to Review</Text>
+                  <Text style={styles.reviewSub}>
+                    {weakWords.length} word{weakWords.length !== 1 ? 's' : ''} need practice
+                  </Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={Colors.inkMuted} />
+            </Pressable>
+          </Animated.View>
+        )}
+
+        {/* Progress Overview */}
+        <Animated.View entering={FadeInDown.delay(500).duration(500).springify()}>
+          <Text style={styles.sectionTitle}>Progress</Text>
+          <Card style={styles.progressCard}>
+            <View style={styles.progressRow}>
+              <Text style={styles.progressLabel}>Lessons completed</Text>
+              <Text style={styles.progressValue}>
+                {completedCount}/{totalLessons}
+              </Text>
+            </View>
+            <View style={styles.progressBarBg}>
+              <View
+                style={[
+                  styles.progressBarFill,
+                  { width: `${Math.round((completedCount / totalLessons) * 100)}%` },
+                ]}
+              />
+            </View>
+
+            <View style={[styles.progressRow, { marginTop: 16 }]}>
+              <Text style={styles.progressLabel}>Current streak</Text>
+              <Text style={styles.progressValue}>{streak} days</Text>
+            </View>
+            <View style={styles.progressRow}>
+              <Text style={styles.progressLabel}>Longest streak</Text>
+              <Text style={styles.progressValue}>{longestStreak} days</Text>
+            </View>
+            <View style={styles.progressRow}>
+              <Text style={styles.progressLabel}>Total exercises</Text>
+              <Text style={styles.progressValue}>{totalExercises}</Text>
+            </View>
+          </Card>
+        </Animated.View>
+      </ScrollView>
+
+      {/* Modals */}
       <Modal visible={showHeartsModal} onClose={() => setShowHeartsModal(false)}>
         <View style={styles.modalBody}>
           <Text style={styles.modalEmoji}>❤️</Text>
@@ -96,9 +241,7 @@ export default function HomeScreen() {
               {timeUntilNextHeart ? formatTime(timeUntilNextHeart) : '...'}
             </Text>
           ) : (
-            <Text style={styles.modalSub}>
-              Your hearts are full! Keep learning.
-            </Text>
+            <Text style={styles.modalSub}>Your hearts are full! Keep learning.</Text>
           )}
           <Button
             title="Got it"
@@ -108,14 +251,11 @@ export default function HomeScreen() {
         </View>
       </Modal>
 
-      {/* ── Streak Modal ── */}
       <Modal visible={showStreakModal} onClose={() => setShowStreakModal(false)}>
         <View style={styles.modalBody}>
           <Text style={styles.modalEmoji}>🔥</Text>
           <Text style={styles.modalTitle}>{streak} Day Streak!</Text>
-          <Text style={styles.modalSub}>
-            Practice daily to keep your streak alive.
-          </Text>
+          <Text style={styles.modalSub}>Practice daily to keep your streak alive.</Text>
           <Button
             title="Great!"
             onPress={() => setShowStreakModal(false)}
@@ -130,42 +270,21 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.cream,
   },
   header: {
     backgroundColor: Colors.white,
     paddingHorizontal: Layout.spacing.lg,
-    paddingTop: Layout.spacing.xs,
-    paddingBottom: Layout.spacing.xs,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Colors.border,
-    ...Layout.shadow.xs,
-  },
-  headerTop: {
+    paddingVertical: Layout.spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 0,
   },
-  brand: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Layout.spacing.sm,
+  mascot: {
+    width: 36,
+    height: 36,
   },
-  navbarLogo: {
-    width: 52,
-    height: 52,
-    borderRadius: 14,
-  },
-  appTitle: {
-    fontFamily: Fonts.extraBold,
-    fontSize: 24,
-    color: Colors.textDark,
-    letterSpacing: -0.6,
-    textTransform: 'uppercase',
-    fontWeight: 'bold',
-  },
-  headerActions: {
+  headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Layout.spacing.sm,
@@ -174,19 +293,160 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: Colors.errorLight,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: Layout.radius.md,
+    backgroundColor: Colors.roseTint10,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: Layout.radius.full,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.roseBorder25,
   },
   heartsIcon: { fontSize: 15 },
   heartsCount: {
-    fontFamily: Fonts.extraBold,
-    fontSize: 15,
-    color: Colors.errorDark,
+    fontFamily: Fonts.bold,
+    fontSize: 13,
+    color: Colors.roseDim,
   },
+  scrollContent: {
+    padding: Layout.spacing.md,
+    gap: 20,
+  },
+
+  // ── Continue Card ──
+  continueCard: {
+    padding: Layout.spacing.lg,
+    borderRadius: Layout.radius.xl,
+    backgroundColor: Colors.white,
+    borderWidth: 1,
+    borderColor: Colors.jadeBorder08,
+  },
+  continueHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  continueInfo: {
+    flex: 1,
+    marginRight: 12,
+  },
+  welcomeText: {
+    fontFamily: Fonts.semiBold,
+    fontSize: TypeScale.body,
+    color: Colors.inkSoft,
+    marginBottom: 4,
+  },
+  lessonTitle: {
+    fontFamily: Fonts.bold,
+    fontSize: TypeScale.h2,
+    color: Colors.ink,
+    marginBottom: 4,
+  },
+  sectionLabel: {
+    fontFamily: Fonts.medium,
+    fontSize: TypeScale.caption,
+    color: Colors.inkMuted,
+  },
+  continueEmoji: {
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    backgroundColor: Colors.jadeTint06,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  continueButton: {
+    marginTop: 4,
+  },
+
+  // ── Stats Row ──
+  statsRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  // ── Quick Actions ──
+  sectionTitle: {
+    fontFamily: Fonts.bold,
+    fontSize: TypeScale.h3,
+    color: Colors.ink,
+    marginBottom: 12,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  // ── Review Card ──
+  reviewCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: Colors.saffronTint12,
+    borderRadius: Layout.radius.lg,
+    padding: Layout.spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.saffronBorder30,
+  },
+  reviewLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  reviewIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: Colors.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  reviewTitle: {
+    fontFamily: Fonts.bold,
+    fontSize: TypeScale.body,
+    color: Colors.saffronDim,
+  },
+  reviewSub: {
+    fontFamily: Fonts.regular,
+    fontSize: TypeScale.caption,
+    color: Colors.inkMuted,
+    marginTop: 1,
+  },
+
+  // ── Progress Card ──
+  progressCard: {
+    padding: Layout.spacing.lg,
+    borderRadius: Layout.radius.lg,
+    backgroundColor: Colors.white,
+    borderWidth: 1,
+    borderColor: Colors.jadeBorder08,
+  },
+  progressRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  progressLabel: {
+    fontFamily: Fonts.medium,
+    fontSize: TypeScale.body,
+    color: Colors.inkSoft,
+  },
+  progressValue: {
+    fontFamily: Fonts.bold,
+    fontSize: TypeScale.body,
+    color: Colors.ink,
+  },
+  progressBarBg: {
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.lockedFill,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 4,
+    backgroundColor: Colors.jadeVivid,
+  },
+
+  // ── Modals ──
   modalBody: {
     alignItems: 'center',
     gap: Layout.spacing.md,
@@ -198,13 +458,13 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontFamily: Fonts.extraBold,
     fontSize: 26,
-    color: Colors.textDark,
+    color: Colors.ink,
     textAlign: 'center',
   },
   modalSub: {
     fontFamily: Fonts.regular,
     fontSize: 16,
-    color: Colors.textMid,
+    color: Colors.inkSoft,
     textAlign: 'center',
     lineHeight: 24,
   },

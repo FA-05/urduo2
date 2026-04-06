@@ -121,7 +121,7 @@ export default function TopicVocabularyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.cream,
   },
   header: {
     flexDirection: 'row',
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Layout.spacing.lg,
     paddingVertical: Layout.spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: Colors.jadeBorder10,
     backgroundColor: Colors.white,
   },
   backButton: {
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 32,
-    color: Colors.green,
+    color: Colors.jadeVivid,
     fontFamily: Fonts.bold,
   },
   titleContainer: {
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: Fonts.bold,
     fontSize: 18,
-    color: Colors.textDark,
+    color: Colors.ink,
   },
   titleRow: {
     flexDirection: 'row',
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
   progress: {
     fontFamily: Fonts.semiBold,
     fontSize: 14,
-    color: Colors.textMuted,
+    color: Colors.inkMuted,
     marginTop: 2,
   },
   content: {
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
   errorText: {
     fontFamily: Fonts.bold,
     fontSize: 18,
-    color: Colors.red,
+    color: Colors.rose,
   },
   navigationFooter: {
     flexDirection: 'row',
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     paddingVertical: Layout.spacing.xl,
     backgroundColor: Colors.white,
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
+    borderTopColor: Colors.jadeBorder10,
   },
   navButton: {
     flexDirection: 'row',
@@ -203,13 +203,13 @@ const styles = StyleSheet.create({
   },
   navIcon: {
     fontSize: 24,
-    color: Colors.green,
+    color: Colors.jadeVivid,
     fontFamily: Fonts.bold,
   },
   navLabel: {
     fontFamily: Fonts.bold,
     fontSize: 16,
-    color: Colors.green,
+    color: Colors.jadeVivid,
   },
   indicatorContainer: {
     flexDirection: 'row',
@@ -221,10 +221,10 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: Colors.border,
+    backgroundColor: Colors.jadeBorder10,
   },
   activeDot: {
-    backgroundColor: Colors.green,
+    backgroundColor: Colors.jadeVivid,
     width: 20,
   },
 });

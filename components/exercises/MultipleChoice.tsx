@@ -44,12 +44,12 @@ const OptionButton = ({
 
   useEffect(() => {
     if (isWrong && isSelected) {
+      // Spec §7.3: shake translateX(-4, 4, -2, 0) over 300ms
       shakeOffset.value = withSequence(
-        withTiming(-8, { duration: 50 }),
-        withTiming(8, { duration: 50 }),
-        withTiming(-6, { duration: 50 }),
-        withTiming(6, { duration: 50 }),
-        withTiming(0, { duration: 50 })
+        withTiming(-4, { duration: 75 }),
+        withTiming(4, { duration: 75 }),
+        withTiming(-2, { duration: 75 }),
+        withTiming(0, { duration: 75 })
       );
     }
   }, [isWrong, isSelected]);
@@ -63,34 +63,27 @@ const OptionButton = ({
 
   const state = getState();
 
+  // Spec §6.4 Multiple Choice
   const stateStyles = {
     correct: {
-      bg: Colors.primaryLight,
-      border: Colors.primary,
-      borderBottom: Colors.primaryDark,
-      text: Colors.primaryDark,
-      badge: Colors.primary,
+      bg: Colors.jadeTint12,
+      border: Colors.jadeVivid,
+      text: Colors.jadeDim,
     },
     wrong: {
-      bg: Colors.errorLight,
-      border: Colors.error,
-      borderBottom: Colors.errorDark,
-      text: Colors.errorDark,
-      badge: Colors.error,
+      bg: Colors.roseTint08,
+      border: Colors.rose,
+      text: Colors.roseDim,
     },
     selected: {
-      bg: Colors.indigoLight,
-      border: Colors.indigo,
-      borderBottom: Colors.indigoDark,
-      text: Colors.indigoDark,
-      badge: Colors.indigo,
+      bg: Colors.jadeTint10,
+      border: Colors.jadeVivid,
+      text: Colors.jadeDim,
     },
     default: {
       bg: Colors.white,
-      border: Colors.border,
-      borderBottom: Colors.borderDark,
-      text: Colors.textDark,
-      badge: Colors.textMid,
+      border: Colors.jadeBorder10,
+      text: Colors.ink,
     },
   };
 
@@ -123,15 +116,13 @@ const OptionButton = ({
         {
           backgroundColor: s.bg,
           borderColor: s.border,
-          borderBottomColor: s.borderBottom,
         },
         animatedStyle,
       ]}
       accessibilityRole="button"
       accessibilityState={{ disabled, selected: isSelected }}
     >
-      {/* Letter badge */}
-      <View style={[styles.letterBadge, { backgroundColor: s.badge + '22', borderColor: s.border }]}>
+      <View style={[styles.letterBadge, { borderColor: s.border }]}>
         <Text style={[styles.letterBadgeText, { color: s.text }]}>
           {state === 'correct' ? '✓' : state === 'wrong' ? '✗' : labels[index] ?? '•'}
         </Text>
@@ -175,18 +166,16 @@ export const MultipleChoice: React.FC<MultipleChoiceProps> = ({ data, onAnswer, 
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={[styles.instruction, urduStyle]}>اس کا کیا مطلب ہے؟</Text>
       </View>
 
-      {/* Question Card */}
+      {/* Question card — spec: jade gradient */}
       <View style={styles.questionCard}>
         <Text style={[styles.questionText, urduStyle]}>{displayQuestion}</Text>
         <Text style={styles.questionHint}>صحیح ترجمہ چنیں</Text>
       </View>
 
-      {/* Options */}
       <View style={styles.optionsGrid}>
         {shuffledOptions.map((option, index) => {
           const isSelected = selectedOption === option;
@@ -208,7 +197,6 @@ export const MultipleChoice: React.FC<MultipleChoiceProps> = ({ data, onAnswer, 
         })}
       </View>
 
-      {/* Footer */}
       <View style={styles.footer}>
         <Button
           title="چیک کریں"
@@ -237,31 +225,27 @@ const styles = StyleSheet.create({
   },
   instruction: {
     fontSize: Layout.isShortDevice ? 17 : 20,
-    color: Colors.textMid,
+    color: Colors.inkSoft,
     fontFamily: Fonts.extraBold,
     textAlign: 'center',
   },
   questionCard: {
     alignItems: 'center',
     padding: Layout.isShortDevice ? Layout.spacing.md : Layout.spacing.lg,
-    backgroundColor: Colors.surface,
-    borderRadius: Layout.radius.xl,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
-    ...Layout.shadow.card,
-    elevation: 3,
+    backgroundColor: Colors.jadeDim,
+    borderRadius: Layout.radius.lg,
     gap: Layout.isShortDevice ? 4 : 8,
   },
   questionText: {
-    fontFamily: Fonts.urdu,
-    fontSize: Layout.isShortDevice ? 28 : 36,
-    color: Colors.textDark,
+    fontFamily: Fonts.urduBold,
+    fontSize: Layout.isShortDevice ? 26 : 32,
+    color: Colors.white,
     textAlign: 'center',
-    lineHeight: Layout.isShortDevice ? 40 : 52,
+    lineHeight: Layout.isShortDevice ? 40 : 50,
   },
   questionHint: {
     fontSize: 11,
-    color: Colors.textMuted,
+    color: 'rgba(255,255,255,0.55)',
     fontFamily: Fonts.regular,
     letterSpacing: 0.3,
     marginTop: 2,
@@ -278,15 +262,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: Layout.spacing.md,
     paddingVertical: Layout.isShortDevice ? 10 : 14,
     borderRadius: Layout.radius.lg,
-    borderWidth: 1.5,
-    borderBottomWidth: Layout.isShortDevice ? 3 : 4,
+    borderWidth: 2,
     gap: Layout.spacing.sm,
   },
   letterBadge: {
     width: Layout.isShortDevice ? 28 : 32,
     height: Layout.isShortDevice ? 28 : 32,
     borderRadius: Layout.isShortDevice ? 14 : 16,
-    borderWidth: 1,
+    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,

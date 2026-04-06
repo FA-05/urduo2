@@ -1,8 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../../constants/colors';
 import { Fonts } from '../../constants/fonts';
 import { Layout } from '../../constants/layout';
+import { urduStyleLarge } from '../../utils/rtl';
 
 interface SectionHeaderProps {
   title: string;
@@ -11,41 +13,48 @@ interface SectionHeaderProps {
   icon: string;
 }
 
-const THEME_COLORS = [
-  Colors.primary, // Emerald
-  Colors.indigo,  // Indigo
-  '#7C3AED',      // Royal Purple
-  Colors.gold,    // Amber
-  '#E11D48',      // Crimson
-  '#0D9488',      // Teal
-  '#DB2777',      // Deep Pink
-  '#475569',      // Slate Blue
-  '#F59E0B',      // Amber Bright
-  '#10B981',      // Emerald Bold
-  '#3B82F6',      // Blue
-  '#8B5CF6',      // Violet
-  '#EC4899',      // Pink
-  '#06B6D4',      // Cyan
+// Spec §2.4: Section banners rotate color per section
+const SECTION_GRADIENTS: [string, string][] = [
+  [Colors.jadeDim, Colors.jade],       // Tertiary → Secondary
+  [Colors.jade, Colors.jadeVivid],     // Secondary → Primary
+  [Colors.jadeDim, Colors.jadeVivid],  // Tertiary → Primary
+  [Colors.jadeDim, Colors.jade],
+  [Colors.jade, Colors.jadeVivid],
+  [Colors.jadeDim, Colors.jadeVivid],
+  [Colors.jadeDim, Colors.jade],
+  [Colors.jade, Colors.jadeVivid],
 ];
 
 export const SectionHeader: React.FC<SectionHeaderProps> = ({ title, subtitle, index, icon }) => {
-  // Select color based on index (1-based from props)
-  const backgroundColor = THEME_COLORS[(index - 1) % THEME_COLORS.length];
+  const gradient = SECTION_GRADIENTS[(index - 1) % SECTION_GRADIENTS.length];
 
   return (
     <View style={styles.container}>
-      <View style={[styles.background, { backgroundColor }]}>
+      <LinearGradient
+        colors={gradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.gradient}
+      >
+        {/* Decorative circles (spec §6.3) */}
+        <View style={styles.decoCircle1} />
+        <View style={styles.decoCircle2} />
+
         <View style={styles.contentRow}>
           <View style={styles.textContent}>
-            <Text style={styles.sectionLabel}>قسم {index}</Text>
-            <Text style={styles.title}>{title}</Text>
-            <Text style={styles.subtitle}>{subtitle}</Text>
+            {/* Section number tag */}
+            <Text style={styles.sectionTag}>قسم {index}</Text>
+            {/* Urdu title (primary) */}
+            <Text style={[styles.urduTitle, urduStyleLarge]}>{title}</Text>
+            {/* Latin subtitle */}
+            <Text style={styles.latinSubtitle}>{subtitle}</Text>
           </View>
-          <View style={styles.iconContainer}>
+          {/* Emoji in frosted pill */}
+          <View style={styles.emojiBadge}>
             <Text style={styles.emoji}>{icon}</Text>
           </View>
         </View>
-      </View>
+      </LinearGradient>
     </View>
   );
 };
@@ -55,16 +64,14 @@ const styles = StyleSheet.create({
     marginHorizontal: Layout.spacing.md,
     marginTop: Layout.spacing.xl,
     marginBottom: Layout.spacing.sm,
-    borderRadius: Layout.radius.xl,
+    borderRadius: Layout.radius.lg,
     overflow: 'hidden',
-    ...Layout.shadow.card,
-    elevation: 8, // Enhanced shadow for Android
   },
-  background: {
-    padding: Layout.spacing.md,
-    paddingVertical: Layout.spacing.md, // More compact
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.15)',
+  gradient: {
+    padding: 18,
+    paddingHorizontal: 20,
+    position: 'relative',
+    overflow: 'hidden',
   },
   contentRow: {
     flexDirection: 'row',
@@ -75,39 +82,51 @@ const styles = StyleSheet.create({
     flex: 1,
     zIndex: 1,
   },
-  iconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: Layout.spacing.md,
-  },
-  emoji: {
-    fontSize: 28,
-  },
-  sectionLabel: {
+  sectionTag: {
     fontFamily: Fonts.bold,
-    color: 'rgba(255,255,255,0.7)',
+    color: 'rgba(255,255,255,0.50)',
     fontSize: 10,
     letterSpacing: 1.5,
     textTransform: 'uppercase',
-    marginBottom: 0,
+    marginBottom: 2,
   },
-  title: {
-    fontFamily: Fonts.extraBold,
+  urduTitle: {
     color: Colors.white,
-    fontSize: 18, // Reduced from 23
-    letterSpacing: 0.3,
-    textShadowColor: 'rgba(0, 0, 0, 0.1)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+    fontSize: 20,
   },
-  subtitle: {
-    fontFamily: Fonts.semiBold,
-    color: 'rgba(255,255,255,0.85)',
-    fontSize: 13, // Reduced from 15
-    lineHeight: 18, // Adjusted
+  latinSubtitle: {
+    fontFamily: Fonts.medium,
+    color: 'rgba(255,255,255,0.65)',
+    fontSize: 13,
+    marginTop: 2,
+  },
+  emojiBadge: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginLeft: Layout.spacing.md,
+  },
+  emoji: {
+    fontSize: 24,
+  },
+  // Decorative circles (spec §6.3)
+  decoCircle1: {
+    position: 'absolute',
+    top: -20,
+    right: -10,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+  },
+  decoCircle2: {
+    position: 'absolute',
+    bottom: -30,
+    left: -20,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(255,255,255,0.06)',
   },
 });

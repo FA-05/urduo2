@@ -10,7 +10,7 @@ import { Colors } from '../../constants/colors';
 import { Layout } from '../../constants/layout';
 
 interface ProgressBarProps {
-  progress: number; // 0 to 1
+  progress: number;
   color?: string;
   backgroundColor?: string;
   height?: number;
@@ -19,8 +19,8 @@ interface ProgressBarProps {
 
 export const ProgressBar: React.FC<ProgressBarProps> = ({
   progress,
-  color = Colors.primary,
-  backgroundColor = Colors.border,
+  color = Colors.jadeVivid,
+  backgroundColor = Colors.creamDeep,
   height = 14,
   style,
 }) => {
@@ -54,7 +54,6 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
           progressStyle,
         ]}
       >
-        {/* Subtle inner highlight for depth */}
         <View style={[styles.highlight, { borderRadius: height / 2 }]} />
       </Animated.View>
     </View>

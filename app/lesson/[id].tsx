@@ -79,7 +79,7 @@ export default function LessonScreen() {
   if (!lessonData || session.exercises.length === 0) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={Colors.green} />
+        <ActivityIndicator size="large" color={Colors.jadeVivid} />
       </View>
     );
   }
@@ -239,7 +239,7 @@ export default function LessonScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.cream,
   },
   exerciseContainer: {
     flex: 1,

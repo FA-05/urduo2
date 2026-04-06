@@ -1,67 +1,56 @@
+// ── URDUO Design Language — Color Tokens ─────────────────────────────────────
+
 export const Colors = {
-  // ── Primary (Earthy Italian-green, warm like Pakistani chai) ──────────────
-  primary:        '#3D9970',
-  primaryDark:    '#2E7257',
-  primaryLight:   '#C8EAD8',
-  primaryMuted:   '#7BBFA0',
+  // ── Brand Palette ─────────────────────────────────────────────────────────
+  jade:        '#336D3D',      // Secondary — brand identity, borders, icons
+  jadeVivid:   '#71D561',      // Primary — CTA buttons, active states, progress fills
+  jadeDim:     '#17412D',      // Tertiary — dark surfaces, section heroes
+  jadeLight:   '#336D3D',      // Hover states, secondary accents
+  jadeGlow:    'rgba(113,213,97,0.18)', // Focus rings, card tints
 
-  // ── Semantic: Error ────────────────────────────────────────────────────────
-  error:          '#D94F3D',
-  errorDark:      '#B83A2C',
-  errorLight:     '#FADADD',
+  // ── System: Saffron (warning / streaks) ──────────────────────────────────
+  saffron:      '#F4A92A',
+  saffronLight: '#FFD166',
+  saffronDim:   '#8A5E0D',
 
-  // ── Semantic: Warning ──────────────────────────────────────────────────────
-  warning:        '#E8923D',
-  warningDark:    '#C97520',
-  warningLight:   '#FDECD4',
+  // ── System: Rose (error / hearts) ────────────────────────────────────────
+  rose:    '#E8445A',
+  roseDim: '#7A1525',
 
-  // ── Semantic: Info ─────────────────────────────────────────────────────────
-  info:           '#3B82F6',
-  infoDark:       '#1D66D8',
-  infoLight:      '#DBEAFE',
+  // ── Accent ───────────────────────────────────────────────────────────────
+  indigo: '#17412D',           // Secondary sections (tertiary green)
+  sky:    '#336D3D',           // Informational states (secondary green)
 
-  // ── Accent: Gold (Italian sunshine / XP reward) ───────────────────────────
-  gold:           '#F0A500',
-  goldDark:       '#C8870A',
-  goldLight:      '#FEF3C7',
+  // ── Neutrals ──────────────────────────────────────────────────────────────
+  cream:     '#FFFFFF',        // App background, screen base
+  creamDeep: '#F1F1F3',        // Subtle dividers, secondary surfaces
+  white:     '#FFFFFF',        // Card surfaces, active node fill
+  ink:       '#0F1F15',        // Primary text
+  inkMid:    '#2D4A38',        // Secondary headings
+  inkSoft:   '#5A7A66',        // Body text, subtitles
+  inkMuted:  '#8FA89A',        // Placeholder text, locked labels, captions
 
-  // ── Accent: Indigo (secondary interactive) ────────────────────────────────
-  indigo:         '#6366F1',
-  indigoDark:     '#4F52CE',
-  indigoLight:    '#E0E7FF',
+  // ── Locked state ──────────────────────────────────────────────────────────
+  lockedFill:   '#E8E8EA',     // Locked node fill
+  lockedShadow: '#C8C8CC',     // Locked node shadow
 
-  // ── Accent: Plum (levels / badges) ───────────────────────────────────────
-  plum:           '#9B5DE5',
-  plumLight:      '#EDE9FE',
+  // ── Derived / Utility ─────────────────────────────────────────────────────
+  jadeBorder08:    'rgba(51,109,61,0.08)',   // Card borders
+  jadeBorder10:    'rgba(51,109,61,0.10)',   // Option tile borders
+  jadeBorder12:    'rgba(51,109,61,0.12)',   // Tab bar top border
+  jadeBorder15:    'rgba(51,109,61,0.15)',   // Bank tile borders
+  jadeBorder20:    'rgba(51,109,61,0.20)',   // Secondary button border
+  jadeBorder25:    'rgba(51,109,61,0.25)',   // Dashed slot border
+  jadeTint06:      'rgba(113,213,97,0.06)',  // Example block bg
+  jadeTint08:      'rgba(113,213,97,0.08)',  // TTS button tint
+  jadeTint10:      'rgba(113,213,97,0.10)',  // Correct option bg
+  jadeTint12:      'rgba(113,213,97,0.12)',  // Correct feedback bg
+  jadeTint22:      'rgba(113,213,97,0.22)',  // Chip hover
 
-  // ── Neutrals (warm-tinted greyscale) ──────────────────────────────────────
-  white:          '#FFFFFF',
-  background:     '#F0EDE8',   // Warm off-white — bridges Italian & South Asian
-  surface:        '#FFFDF9',   // Slightly elevated surface
-  cardBg:         '#FFFFFF',
-  border:         '#E8E2D9',   // Warmer divider
-  borderDark:     '#CFC8BC',
-  textDark:       '#1A1A2E',   // Near-ink — high contrast
-  textMid:        '#4A4A5A',
-  textMuted:      '#9E97A0',
-  textDisabled:   '#D0CBCA',
+  saffronTint12:   'rgba(244,169,42,0.12)', // Streak pill bg
+  saffronBorder30: 'rgba(244,169,42,0.30)', // Streak pill border
 
-  // ── Tab bar ────────────────────────────────────────────────────────────────
-  tabActive:      '#3D9970',
-  tabInactive:    '#9E97A0',
-  tabBg:          '#FFFFFF',
-
-  // ── Legacy aliases (keep for backward-compat during migration) ─────────────
-  /** @deprecated use primary */        green:       '#3D9970',
-  /** @deprecated use primaryDark */    greenDark:   '#2E7257',
-  /** @deprecated use primaryLight */   greenLight:  '#C8EAD8',
-  /** @deprecated use primaryMuted */   greenMuted:  '#7BBFA0',
-  /** @deprecated use error */          red:         '#D94F3D',
-  /** @deprecated use errorDark */      redDark:     '#B83A2C',
-  /** @deprecated use errorLight */     redLight:    '#FADADD',
-  /** @deprecated use indigo */         blue:        '#6366F1',
-  /** @deprecated use indigoDark */     blueDark:    '#4F52CE',
-  /** @deprecated use indigoLight */    blueLight:   '#E0E7FF',
-  /** @deprecated use plum */           purple:      '#9B5DE5',
-  /** @deprecated use plumLight */      purpleLight: '#EDE9FE',
+  roseTint08:      'rgba(232,68,90,0.08)',   // Wrong feedback bg
+  roseTint10:      'rgba(232,68,90,0.10)',   // Hearts pill bg
+  roseBorder25:    'rgba(232,68,90,0.25)',   // Hearts pill border
 };

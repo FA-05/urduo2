@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   },
   countText: {
     fontFamily: Fonts.extraBold,
-    color: Colors.errorDark,
+    color: Colors.roseDim,
     fontSize: 14,
     lineHeight: 18,
   },

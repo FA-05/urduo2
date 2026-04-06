@@ -10,7 +10,7 @@ import { Colors } from '../../constants/colors';
 import { Fonts } from '../../constants/fonts';
 
 interface ExerciseWrapperProps {
-  progress: number; // 0 to 1
+  progress: number;
   hearts: number;
   onQuit: () => void;
   children: React.ReactNode;
@@ -35,7 +35,7 @@ export const ExerciseWrapper: React.FC<ExerciseWrapperProps> = ({
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: Math.max(insets.bottom, 16) }]}>
       <View style={styles.header}>
         <Pressable
           onPress={handleQuitPress}
@@ -89,7 +89,7 @@ export const ExerciseWrapper: React.FC<ExerciseWrapperProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.cream,
   },
   header: {
     flexDirection: 'row',
@@ -103,12 +103,12 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: Layout.radius.round,
-    backgroundColor: Colors.border,
+    borderRadius: Layout.radius.full,
+    backgroundColor: Colors.creamDeep,
   },
   closeIcon: {
     fontSize: 18,
-    color: Colors.textMid,
+    color: Colors.inkSoft,
     fontFamily: Fonts.extraBold,
   },
   progressBar: {
@@ -124,13 +124,13 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontFamily: Fonts.extraBold,
     fontSize: 24,
-    color: Colors.textDark,
+    color: Colors.ink,
     textAlign: 'center',
   },
   modalSubtitle: {
     fontFamily: Fonts.regular,
     fontSize: 18,
-    color: Colors.textMid,
+    color: Colors.inkSoft,
     textAlign: 'center',
   },
   modalActions: {

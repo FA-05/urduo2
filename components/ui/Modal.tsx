@@ -84,16 +84,16 @@ export const Modal: React.FC<ModalProps> = ({
 const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(26, 26, 46, 0.55)',
+    backgroundColor: 'rgba(15, 31, 21, 0.55)',
   },
   container: {
     flex: 1,
     justifyContent: 'flex-end',
   },
   content: {
-    backgroundColor: Colors.cardBg,
-    borderTopLeftRadius: Layout.radius.xxl,
-    borderTopRightRadius: Layout.radius.xxl,
+    backgroundColor: Colors.white,
+    borderTopLeftRadius: Layout.radius.xl,
+    borderTopRightRadius: Layout.radius.xl,
     padding: Layout.spacing.lg,
     paddingBottom: Layout.spacing.xxl,
     minHeight: SCREEN_HEIGHT * 0.28,
@@ -102,8 +102,8 @@ const styles = StyleSheet.create({
   handle: {
     width: 36,
     height: 4,
-    backgroundColor: Colors.border,
-    borderRadius: Layout.radius.round,
+    backgroundColor: Colors.creamDeep,
+    borderRadius: Layout.radius.full,
     alignSelf: 'center',
     marginBottom: Layout.spacing.lg,
   },

@@ -8,20 +8,25 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'گھر',
+          title: 'Home',
+        }}
+      />
+      <Tabs.Screen
+        name="path"
+        options={{
+          title: 'Lessons',
         }}
       />
       <Tabs.Screen
         name="vocabulary"
         options={{
-          title: 'الفاظ',
+          title: 'Vocab',
         }}
       />
-
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'پروفائل',
+          title: 'Profile',
         }}
       />
     </Tabs>

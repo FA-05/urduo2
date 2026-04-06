@@ -48,7 +48,7 @@ export const Avatar: React.FC<AvatarProps> = ({ emoji, size = 'md', style }) => 
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.border,
+    backgroundColor: Colors.creamDeep,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',

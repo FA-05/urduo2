@@ -17,39 +17,45 @@ export const StreakWidget: React.FC<StreakWidgetProps> = ({ streak, onPress }) =
   };
 
   const isActive = streak > 0;
-  const color = isActive ? Colors.goldDark : Colors.textMuted;
-  const bgColor = isActive ? Colors.goldLight : Colors.background;
 
   return (
     <Pressable
       onPress={handlePress}
-      style={[styles.container, { backgroundColor: bgColor }]}
+      style={[
+        styles.container,
+        {
+          backgroundColor: isActive ? Colors.saffronTint12 : Colors.creamDeep,
+          borderColor: isActive ? Colors.saffronBorder30 : Colors.jadeBorder10,
+        },
+      ]}
       accessibilityRole="button"
       accessibilityLabel={`Streak: ${streak} days`}
       hitSlop={Layout.hitSlop}
     >
       <Text style={styles.icon}>🔥</Text>
-      <Text style={[styles.text, { color }]}>{streak}</Text>
+      <Text style={[styles.text, { color: isActive ? Colors.saffronDim : Colors.inkMuted }]}>
+        {streak}
+      </Text>
     </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
+  // Spec §6.8: r-full, 6px 12px padding, Sora 700 13px
   container: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: Layout.radius.md,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: Layout.radius.full,
     borderWidth: 1,
-    borderColor: Colors.border,
   },
   icon: {
-    fontSize: 18,
+    fontSize: 15,
   },
   text: {
-    fontFamily: Fonts.extraBold,
-    fontSize: 15,
+    fontFamily: Fonts.bold,
+    fontSize: 13,
   },
 });

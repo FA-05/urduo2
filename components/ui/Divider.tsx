@@ -13,7 +13,7 @@ export const Divider: React.FC<DividerProps> = ({ style }) => (
 const styles = StyleSheet.create({
   divider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: Colors.border,
+    backgroundColor: Colors.creamDeep,
     marginVertical: 12,
   },
 });

@@ -12,11 +12,11 @@ import { Colors } from '../../constants/colors';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const CONFETTI_COLORS = [
-  Colors.green,
-  Colors.red,
-  Colors.gold,
-  Colors.blue,
-  Colors.purple,
+  Colors.jadeVivid,
+  Colors.rose,
+  Colors.saffron,
+  Colors.sky,
+  Colors.indigo,
 ];
 
 interface ParticleProps {

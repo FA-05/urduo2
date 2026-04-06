@@ -75,35 +75,45 @@ export const VocabularyCard: React.FC<VocabularyCardProps> = ({
         {/* Front — Italian */}
         <AnimatedPressable
           onPress={handleFlip}
-          style={[styles.cardBase, styles.cardFront, frontAnimatedStyle]}
+          style={[styles.cardBase, frontAnimatedStyle]}
         >
-          <Text style={styles.flagCorner}>🇮🇹</Text>
-          <Text style={styles.tapHint}>اُلٹنے کے لیے ٹیپ کریں</Text>
-          <Text style={styles.emoji}>{data.emoji}</Text>
-          <View style={styles.italianContainer}>
-            <Text style={styles.italianText}>{data.italian}</Text>
-            <Pressable
-              onPress={(e) => {
-                e.stopPropagation();
-                handleSpeak(data.italian);
-              }}
-              style={styles.audioButtonSmall}
-            >
-              <Ionicons name="volume-high" size={24} color={Colors.primary} />
-            </Pressable>
+          <Pressable
+            onPress={(e) => {
+              e.stopPropagation();
+              handleSpeak(data.italian);
+            }}
+            style={styles.ttsButton}
+          >
+            <Ionicons name="volume-high" size={22} color={Colors.jade} />
+          </Pressable>
+
+          <View style={styles.langBadgeIt}>
+            <Text style={styles.langBadgeFlag}>🇮🇹</Text>
+            <Text style={styles.langBadgeTextIt}>Italiano</Text>
           </View>
+
+          <Text style={styles.emoji}>{data.emoji}</Text>
+          <Text style={styles.italianText}>{data.italian}</Text>
           <Text style={styles.pronunciation}>[{data.pronunciation}]</Text>
+          <Text style={styles.tapHint}>اُلٹنے کے لیے ٹیپ کریں</Text>
         </AnimatedPressable>
 
         {/* Back — Urdu */}
         <AnimatedPressable
           onPress={handleFlip}
-          style={[styles.cardBase, styles.cardBack, backAnimatedStyle]}
+          style={[styles.cardBase, backAnimatedStyle]}
         >
-          <Text style={styles.flagCorner}>🇵🇰</Text>
+          <View style={styles.langBadgeUr}>
+            <Text style={styles.langBadgeFlag}>🇵🇰</Text>
+            <Text style={styles.langBadgeTextUr}>اردو</Text>
+          </View>
+
           <View style={styles.urduSection}>
             <Text style={[styles.urduText, urduStyleDisplay]}>{data.urdu}</Text>
           </View>
+
+          <View style={styles.divider} />
+
           <View style={styles.exampleBlock}>
             <View style={styles.exampleHeader}>
               <Text style={styles.exampleItalian}>"{data.exampleItalian}"</Text>
@@ -112,9 +122,9 @@ export const VocabularyCard: React.FC<VocabularyCardProps> = ({
                   e.stopPropagation();
                   handleSpeak(data.exampleItalian);
                 }}
-                style={styles.audioButtonTiny}
+                style={styles.ttsButtonSmall}
               >
-                <Ionicons name="volume-medium" size={20} color={Colors.primary} />
+                <Ionicons name="volume-medium" size={18} color={Colors.jade} />
               </Pressable>
             </View>
             <Text style={[styles.exampleUrdu, urduStyle]}>"{data.exampleUrdu}"</Text>
@@ -131,7 +141,7 @@ export const VocabularyCard: React.FC<VocabularyCardProps> = ({
             style={[styles.actionButton, styles.notYetButton]}
             onPress={() => handleAction(false)}
           >
-            <Text style={[styles.actionButtonText, urduStyle, { color: Colors.textMid }]}>
+            <Text style={[styles.actionButtonText, urduStyle, { color: Colors.inkSoft }]}>
               ابھی نہیں
             </Text>
           </Pressable>
@@ -165,92 +175,117 @@ const styles = StyleSheet.create({
   cardBase: {
     width: '100%',
     height: 380,
-    borderRadius: Layout.radius.xxl,
-    padding: Layout.spacing.xl,
+    borderRadius: Layout.radius.xl,
+    padding: 28,
+    paddingHorizontal: 24,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderColor: Colors.border,
-    borderBottomWidth: 4,
+    borderColor: Colors.jadeBorder08,
+    backgroundColor: Colors.white,
     backfaceVisibility: 'hidden',
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    ...Layout.shadow.card,
   },
-  cardFront: {
-    backgroundColor: Colors.white,
-  },
-  cardBack: {
-    backgroundColor: Colors.surface,
-  },
-  flagCorner: {
+  ttsButton: {
     position: 'absolute',
-    top: Layout.spacing.lg,
-    right: Layout.spacing.lg,
-    fontSize: 22,
+    top: 20,
+    right: 20,
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: Colors.jadeTint08,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  tapHint: {
-    position: 'absolute',
-    bottom: Layout.spacing.lg,
-    fontFamily: Fonts.regular,
-    fontSize: 12,
-    color: Colors.textMuted,
-    fontStyle: 'italic',
+  ttsButtonSmall: {
+    padding: 4,
+    borderRadius: 10,
+    backgroundColor: Colors.jadeTint08,
+  },
+  langBadgeIt: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: Layout.radius.full,
+    backgroundColor: Colors.jadeTint10,
+    marginBottom: Layout.spacing.sm,
+  },
+  langBadgeUr: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: Layout.radius.full,
+    backgroundColor: Colors.saffronTint12,
+    alignSelf: 'flex-end',
+    marginBottom: Layout.spacing.md,
+  },
+  langBadgeFlag: { fontSize: 14 },
+  langBadgeTextIt: {
+    fontFamily: Fonts.bold,
+    fontSize: 11,
+    color: Colors.jade,
+    letterSpacing: 0.3,
+  },
+  langBadgeTextUr: {
+    fontFamily: Fonts.urduSemiBold,
+    fontSize: 13,
+    color: Colors.saffronDim,
+    writingDirection: 'rtl',
   },
   emoji: {
-    fontSize: 68,
-    marginBottom: Layout.spacing.lg,
+    fontSize: 56,
+    marginBottom: Layout.spacing.md,
   },
   italianText: {
     fontFamily: Fonts.extraBold,
     fontSize: 38,
-    color: Colors.textDark,
+    color: Colors.ink,
     textAlign: 'center',
+    letterSpacing: -1.14,
     marginBottom: Layout.spacing.xs,
-    letterSpacing: -0.5,
   },
   pronunciation: {
     fontFamily: Fonts.regular,
-    fontSize: 17,
-    color: Colors.textMuted,
-    fontStyle: 'italic',
+    fontSize: 13,
+    color: Colors.inkMuted,
+  },
+  tapHint: {
+    position: 'absolute',
+    bottom: 20,
+    fontFamily: Fonts.urdu,
+    fontSize: 12,
+    color: Colors.inkMuted,
+    writingDirection: 'rtl',
   },
   urduSection: {
     alignItems: 'flex-end',
     width: '100%',
-    marginBottom: Layout.spacing.xl,
   },
   urduText: {
-    fontSize: 46,
-    color: Colors.textDark,
+    fontSize: 32,
+    color: Colors.ink,
+  },
+  divider: {
+    width: '100%',
+    height: 1,
+    backgroundColor: Colors.jadeBorder08,
+    marginVertical: Layout.spacing.md,
   },
   exampleBlock: {
     width: '100%',
     gap: Layout.spacing.xs,
     padding: Layout.spacing.md,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.jadeTint06,
     borderRadius: Layout.radius.md,
     borderLeftWidth: 3,
-    borderLeftColor: Colors.primary,
-  },
-  exampleItalian: {
-    fontFamily: Fonts.semiBold,
-    fontSize: 16,
-    color: Colors.textMid,
-    fontStyle: 'italic',
-    flex: 1,
-  },
-  exampleUrdu: {
-    fontSize: 16,
-    color: Colors.textMid,
-  },
-  italianContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Layout.spacing.sm,
-    marginBottom: Layout.spacing.xs,
+    borderLeftColor: Colors.jadeVivid,
   },
   exampleHeader: {
     flexDirection: 'row',
@@ -258,15 +293,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: Layout.spacing.xs,
   },
-  audioButtonSmall: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: Colors.primary + '11',
+  exampleItalian: {
+    fontFamily: Fonts.medium,
+    fontSize: 14,
+    color: Colors.inkSoft,
+    fontStyle: 'italic',
+    flex: 1,
   },
-  audioButtonTiny: {
-    padding: 4,
-    borderRadius: 15,
-    backgroundColor: Colors.primary + '11',
+  exampleUrdu: {
+    fontSize: 15,
+    color: Colors.inkSoft,
   },
   actionsContainer: {
     width: '100%',
@@ -279,19 +315,18 @@ const styles = StyleSheet.create({
     borderRadius: Layout.radius.lg,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1.5,
-    borderBottomWidth: 3,
   },
   notYetButton: {
     backgroundColor: Colors.white,
-    borderColor: Colors.borderDark,
+    borderWidth: 2,
+    borderColor: Colors.jadeBorder20,
   },
   knewItButton: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primaryDark,
+    backgroundColor: Colors.jadeVivid,
+    ...Layout.shadow.btn,
   },
   actionButtonText: {
-    fontFamily: Fonts.bold,
+    fontFamily: Fonts.urduBold,
     fontSize: 18,
   },
 });
