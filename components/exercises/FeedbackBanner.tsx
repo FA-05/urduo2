@@ -44,8 +44,8 @@ export const FeedbackBanner: React.FC<FeedbackBannerProps> = ({
   // Spec §6.5: Feedback Banner
   const theme = outOfHearts
     ? {
-        bg: Colors.roseTint08,
-        border: Colors.roseBorder25,
+        bg: '#FDEDEF',
+        border: '#F5C6CB',
         iconBg: Colors.rose,
         iconText: '✗',
         titleColor: Colors.roseDim,
@@ -55,8 +55,8 @@ export const FeedbackBanner: React.FC<FeedbackBannerProps> = ({
       }
     : isCorrect
     ? {
-        bg: Colors.jadeTint12,
-        border: Colors.jadeBorder25,
+        bg: '#E8F8E5',
+        border: '#B7E4AF',
         iconBg: Colors.jadeVivid,
         iconText: '✓',
         titleColor: Colors.jadeDim,
@@ -65,8 +65,8 @@ export const FeedbackBanner: React.FC<FeedbackBannerProps> = ({
         buttonVariant: 'primary' as const,
       }
     : {
-        bg: Colors.roseTint08,
-        border: Colors.roseBorder25,
+        bg: '#FDEDEF',
+        border: '#F5C6CB',
         iconBg: Colors.rose,
         iconText: '✗',
         titleColor: Colors.roseDim,
@@ -132,7 +132,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1.5,
     paddingHorizontal: Layout.spacing.lg,
     paddingTop: Layout.spacing.lg,
-    ...Layout.shadow.elevated,
   },
   content: {
     gap: Layout.spacing.md,
@@ -163,6 +162,7 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: Fonts.urduBold,
     fontSize: Layout.isShortDevice ? 19 : 22,
+    lineHeight: Layout.isShortDevice ? 19 * 2.2 : 22 * 2.2,
   },
   correctAnswerBlock: {
     alignItems: 'flex-end',
@@ -171,11 +171,13 @@ const styles = StyleSheet.create({
   correctAnswerLabel: {
     fontFamily: Fonts.urduSemiBold,
     fontSize: 12,
+    lineHeight: 12 * 2.2,
     opacity: 0.75,
   },
   correctAnswerText: {
     fontFamily: Fonts.urduBold,
     fontSize: Layout.isShortDevice ? 15 : 17,
+    lineHeight: Layout.isShortDevice ? 15 * 2.2 : 17 * 2.2,
   },
   button: {
     width: '100%',

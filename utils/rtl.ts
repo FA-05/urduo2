@@ -12,7 +12,7 @@ export const urduStyle = {
   writingDirection: 'rtl' as const,
   textAlign: 'right' as const,
   fontFamily: Fonts.urduBold,
-  lineHeight: UrduTypeScale.body * 1.7,
+  lineHeight: UrduTypeScale.body * 2.2,
 };
 
 /** Large Urdu text — for section titles and modal headers */
@@ -20,7 +20,7 @@ export const urduStyleLarge = {
   writingDirection: 'rtl' as const,
   textAlign: 'right' as const,
   fontFamily: Fonts.urduBold,
-  lineHeight: UrduTypeScale.h1 * 1.7,
+  lineHeight: UrduTypeScale.h1 * 2.2,
 };
 
 /** Urdu display text — for vocabulary card translations */
@@ -28,7 +28,7 @@ export const urduStyleDisplay = {
   writingDirection: 'rtl' as const,
   textAlign: 'right' as const,
   fontFamily: Fonts.urduBold,
-  lineHeight: UrduTypeScale.display * 1.6,
+  lineHeight: UrduTypeScale.display * 2.2,
 };
 
 /** Caption-size Urdu text — for word counts, nav labels */
@@ -36,5 +36,5 @@ export const urduStyleCaption = {
   writingDirection: 'rtl' as const,
   textAlign: 'right' as const,
   fontFamily: Fonts.urduMedium,
-  lineHeight: UrduTypeScale.caption * 1.7,
+  lineHeight: UrduTypeScale.caption * 2.2,
 };

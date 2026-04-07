@@ -271,6 +271,7 @@ const styles = StyleSheet.create({
   urduText: {
     fontSize: 32,
     color: Colors.ink,
+    lineHeight: 32 * 2.2,
   },
   divider: {
     width: '100%',
@@ -303,6 +304,7 @@ const styles = StyleSheet.create({
   exampleUrdu: {
     fontSize: 15,
     color: Colors.inkSoft,
+    lineHeight: 15 * 2.2,
   },
   actionsContainer: {
     width: '100%',

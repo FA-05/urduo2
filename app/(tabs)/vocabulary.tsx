@@ -1,21 +1,19 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, Platform } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { getVocabularyBySection, VocabularyTopic } from '../../data/vocabulary';
 import { lessonsData } from '../../data';
 import { useProgressStore } from '../../store/progressStore';
 import { Colors } from '../../constants/colors';
 import { Fonts } from '../../constants/fonts';
 import { Layout } from '../../constants/layout';
-import { urduStyleLarge } from '../../utils/rtl';
-import { Modal } from '../../components/ui/Modal';
-import { Button } from '../../components/ui/Button';
-import { TopicCard } from '../../components/ui/TopicCard';
+import { OverallRing } from '../../components/vocabulary/OverallRing';
+import { FilterChip } from '../../components/vocabulary/FilterChip';
+import { TopicPill } from '../../components/vocabulary/TopicPill';
+import { ConfirmModal } from '../../components/ui/ConfirmModal';
 import { SectionHeader } from '../../components/home/SectionHeader';
 
-// Section accent colours aligned with SectionHeader gradients
 const SECTION_ACCENTS = [
   Colors.jade,
   Colors.jadeDim,
@@ -27,13 +25,23 @@ const SECTION_ACCENTS = [
   Colors.jadeDim,
 ];
 
+type FilterType = 'all' | 'unlocked' | 'in_progress' | 'mastered';
+
+const FILTERS: { key: FilterType; label: string }[] = [
+  { key: 'all', label: 'All' },
+  { key: 'unlocked', label: 'Unlocked' },
+  { key: 'in_progress', label: 'In progress' },
+  { key: 'mastered', label: 'Mastered' },
+];
+
 export default function VocabularyScreen() {
   const router = useRouter();
   const sectionVocab = getVocabularyBySection();
   const insets = useSafeAreaInsets();
-  const { completedLessons } = useProgressStore();
-  const [showUnlockModal, setShowUnlockModal] = React.useState(false);
-  const [selectedLockedTopic, setSelectedLockedTopic] = React.useState<VocabularyTopic | null>(null);
+  const { completedLessons, masteredWords } = useProgressStore();
+  const [showUnlockModal, setShowUnlockModal] = useState(false);
+  const [selectedLockedTopic, setSelectedLockedTopic] = useState<VocabularyTopic | null>(null);
+  const [activeFilter, setActiveFilter] = useState<FilterType>('all');
 
   const unlockedLessonIds = useMemo(() => {
     const ids = new Set<string>();
@@ -51,22 +59,26 @@ export default function VocabularyScreen() {
     return ids;
   }, [completedLessons]);
 
-  const { totalWordsCount, unlockedWordsCount } = useMemo(() => {
-    let total = 0;
-    let unlocked = 0;
+  const masteredSet = useMemo(() => new Set(masteredWords), [masteredWords]);
 
-    sectionVocab.forEach(section => {
-      section.topics.forEach(topic => {
-        total += topic.words.length;
-        if (unlockedLessonIds.has(topic.lessonId)) {
-          unlocked += topic.words.length;
-        }
-      });
-    });
-    return { totalWordsCount: total, unlockedWordsCount: unlocked };
-  }, [sectionVocab, unlockedLessonIds]);
+  const getTopicMasteredCount = (topic: VocabularyTopic) =>
+    topic.words.filter(w => masteredSet.has(w.id)).length;
 
-  const handleTopicPress = (topic: any, isLocked: boolean, sectionIcon: string) => {
+  const getTopicStatus = (topic: VocabularyTopic, isUnlocked: boolean): FilterType | 'locked' => {
+    if (!isUnlocked) return 'locked';
+    const mastered = getTopicMasteredCount(topic);
+    if (mastered === topic.words.length && topic.words.length > 0) return 'mastered';
+    if (mastered > 0) return 'in_progress';
+    return 'unlocked';
+  };
+
+  const overallProgress = useMemo(() => {
+    const allWordIds = sectionVocab.flatMap(s => s.topics.flatMap(t => t.words.map(w => w.id)));
+    const mastered = allWordIds.filter(id => masteredSet.has(id)).length;
+    return allWordIds.length > 0 ? mastered / allWordIds.length : 0;
+  }, [sectionVocab, masteredSet]);
+
+  const handleTopicPress = (topic: VocabularyTopic, isLocked: boolean, sectionIcon: string) => {
     if (isLocked) {
       setSelectedLockedTopic(topic);
       setShowUnlockModal(true);
@@ -96,57 +108,52 @@ export default function VocabularyScreen() {
     return null;
   };
 
-  const { items, stickyHeaderIndices } = useMemo(() => {
-    const items: React.ReactNode[] = [];
-    const stickyHeaderIndices: number[] = [];
+  const unlockInfo = selectedLockedTopic ? getUnlockInfo(selectedLockedTopic.lessonId) : null;
 
-    sectionVocab.forEach((section, sectionIndex) => {
-      stickyHeaderIndices.push(items.length);
-      items.push(
-        <View key={`header-${section.id}`} style={styles.stickyHeaderWrapper}>
-          <SectionHeader
-            title={section.title}
-            subtitle={section.subtitle}
-            index={sectionIndex + 1}
-            icon={section.icon}
-          />
-        </View>
-      );
+  const filteredSections = useMemo(() => {
+    return sectionVocab
+      .map((section, sectionIndex) => {
+        const accentColor = SECTION_ACCENTS[sectionIndex % SECTION_ACCENTS.length];
+        const filteredTopics = section.topics.filter(topic => {
+          if (activeFilter === 'all') return true;
+          const isUnlocked = unlockedLessonIds.has(topic.lessonId);
+          const status = getTopicStatus(topic, isUnlocked);
+          return status === activeFilter;
+        });
+        return { section, sectionIndex, accentColor, filteredTopics };
+      })
+      .filter(entry => entry.filteredTopics.length > 0);
+  }, [sectionVocab, unlockedLessonIds, activeFilter, masteredSet]);
 
-      items.push(
-        <View key={`grid-${section.id}`} style={styles.grid}>
-          {section.topics.map((topic, topicIndex) => {
-            const isUnlocked = unlockedLessonIds.has(topic.lessonId);
-            const accentColor = SECTION_ACCENTS[sectionIndex % SECTION_ACCENTS.length];
-
-            return (
-              <TopicCard
-                key={topicIndex}
-                title={topic.title}
-                emoji={topic.words[0]?.emoji || '📚'}
-                wordCount={topic.words.length}
-                accentColor={accentColor}
-                isLocked={!isUnlocked}
-                onPress={() => handleTopicPress(topic, !isUnlocked, section.icon)}
-              />
-            );
-          })}
-        </View>
-      );
-    });
-
-    return { items, stickyHeaderIndices };
-  }, [sectionVocab, unlockedLessonIds]);
+  const stickyHeaderIndices = useMemo(
+    () => filteredSections.map((_, i) => i * 2),
+    [filteredSections],
+  );
 
   return (
     <View style={styles.container}>
-      <View style={[styles.simpleHeader, { paddingTop: insets.top + 10 }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
         <View style={styles.headerTop}>
           <Text style={styles.title}>Vocabulary</Text>
-          <View style={styles.simpleBadge}>
-            <Text style={styles.simpleBadgeText}>Unlocked: {unlockedWordsCount} / {totalWordsCount}</Text>
-          </View>
+          <OverallRing progress={overallProgress} />
         </View>
+      </View>
+
+      <View style={styles.filterStrip}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterStripContent}
+        >
+          {FILTERS.map(f => (
+            <FilterChip
+              key={f.key}
+              label={f.label}
+              isActive={activeFilter === f.key}
+              onPress={() => setActiveFilter(f.key)}
+            />
+          ))}
+        </ScrollView>
       </View>
 
       <ScrollView
@@ -155,46 +162,62 @@ export default function VocabularyScreen() {
         stickyHeaderIndices={stickyHeaderIndices}
         scrollEventThrottle={16}
         decelerationRate="normal"
-        removeClippedSubviews={Platform.OS === 'android'}
       >
-        {items}
+        {filteredSections.flatMap(({ section, sectionIndex, accentColor, filteredTopics }) => [
+          <View key={`header-${section.id}`} style={styles.stickyHeaderWrapper}>
+            <SectionHeader
+              title={section.title}
+              subtitle={section.subtitle}
+              index={sectionIndex + 1}
+              icon={section.icon}
+            />
+          </View>,
+          <ScrollView
+            key={`topics-${section.id}`}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.topicRow}
+            style={styles.topicRowOuter}
+          >
+            {filteredTopics.map((topic, topicIndex) => {
+              const isUnlocked = unlockedLessonIds.has(topic.lessonId);
+              return (
+                <TopicPill
+                  key={topicIndex}
+                  title={topic.title}
+                  emoji={topic.words[0]?.emoji || '📚'}
+                  wordCount={topic.words.length}
+                  masteredCount={getTopicMasteredCount(topic)}
+                  accentColor={accentColor}
+                  isLocked={!isUnlocked}
+                  onPress={() => handleTopicPress(topic, !isUnlocked, section.icon)}
+                />
+              );
+            })}
+          </ScrollView>,
+        ])}
         <View style={{ height: 40 }} />
       </ScrollView>
 
-      <Modal visible={showUnlockModal} onClose={() => setShowUnlockModal(false)}>
-        {selectedLockedTopic && (
-          <View style={styles.modalBody}>
-            {(() => {
-              const info = getUnlockInfo(selectedLockedTopic.lessonId);
-              return (
-                <React.Fragment>
-                  <View style={styles.modalIconContainer}>
-                    <Ionicons name="lock-closed" size={42} color={Colors.saffron} />
-                  </View>
-
-                  <Text style={[styles.modalTitle, urduStyleLarge]}>یہ سبق مقفل ہے</Text>
-                  <Text style={styles.modalSubUrdu}>
-                    اس ذخیرہ الفاظ کو کھولنے کے لیے آپ کو سیکشن {info?.sectionIcon} "{info?.sectionTitle}" کا سبق "{info?.lessonTitle}" مکمل کرنا ہوگا۔
-                  </Text>
-
-                  <View style={styles.modalDivider} />
-
-                  <Text style={styles.modalTitleEn}>Vocabulary Locked</Text>
-                  <Text style={styles.modalSubEn}>
-                    To unlock this, you need to complete the lesson "{info?.lessonTitle}" in the {info?.sectionIcon} "{info?.sectionSubtitle}" section.
-                  </Text>
-                </React.Fragment>
-              );
-            })()}
-
-            <Button
-              title="ٹھیک ہے / Got it"
-              onPress={() => setShowUnlockModal(false)}
-              style={styles.modalButton}
-            />
-          </View>
-        )}
-      </Modal>
+      <ConfirmModal
+        visible={showUnlockModal}
+        onClose={() => setShowUnlockModal(false)}
+        icon="lock-closed"
+        iconColor={Colors.saffron}
+        title="Vocabulary Locked"
+        message={
+          unlockInfo
+            ? `To unlock this, you need to complete the lesson "${unlockInfo.lessonTitle}" in the ${unlockInfo.sectionIcon} "${unlockInfo.sectionSubtitle}" section.`
+            : 'Complete the required lesson to unlock this vocabulary.'
+        }
+        actions={[
+          {
+            title: 'Got it',
+            variant: 'primary',
+            onPress: () => setShowUnlockModal(false),
+          },
+        ]}
+      />
     </View>
   );
 }
@@ -204,7 +227,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.cream,
   },
-  simpleHeader: {
+  header: {
     paddingHorizontal: Layout.spacing.lg,
     paddingBottom: Layout.spacing.md,
     backgroundColor: Colors.white,
@@ -212,25 +235,22 @@ const styles = StyleSheet.create({
   headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: Layout.spacing.sm,
+    alignItems: 'center',
   },
   title: {
     fontFamily: Fonts.extraBold,
-    fontSize: 18,
+    fontSize: 22,
     color: Colors.ink,
   },
-  simpleBadge: {
-    backgroundColor: Colors.jadeTint10,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: Layout.radius.full,
-    marginTop: 4,
+  filterStrip: {
+    backgroundColor: Colors.white,
+    paddingBottom: Layout.spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.jadeBorder08,
   },
-  simpleBadgeText: {
-    fontFamily: Fonts.extraBold,
-    fontSize: 13,
-    color: Colors.jade,
+  filterStripContent: {
+    paddingHorizontal: Layout.spacing.lg,
+    gap: Layout.spacing.sm,
   },
   scrollContent: {
     paddingBottom: Layout.spacing.xxl,
@@ -239,66 +259,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.cream,
     zIndex: 10,
   },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Layout.spacing.md,
-    justifyContent: 'space-between',
-    paddingHorizontal: Layout.spacing.md,
+  topicRowOuter: {
     marginTop: Layout.spacing.sm,
+    marginBottom: Layout.spacing.lg,
   },
-  modalBody: {
-    alignItems: 'center',
-    paddingVertical: Layout.spacing.sm,
-  },
-  modalIconContainer: {
-    width: 74,
-    height: 74,
-    borderRadius: 37,
-    backgroundColor: Colors.saffronTint12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Layout.spacing.md,
-  },
-  modalTitle: {
-    fontSize: 24,
-    color: Colors.ink,
-    textAlign: 'center',
-    marginBottom: Layout.spacing.sm,
-  },
-  modalSubUrdu: {
-    fontFamily: Fonts.urdu,
-    fontSize: 18,
-    color: Colors.inkSoft,
-    textAlign: 'center',
-    lineHeight: 28,
-    marginBottom: Layout.spacing.md,
-    paddingHorizontal: Layout.spacing.sm,
-  },
-  modalDivider: {
-    width: '30%',
-    height: 1.5,
-    backgroundColor: Colors.creamDeep,
-    marginVertical: Layout.spacing.md,
-    opacity: 0.6,
-  },
-  modalTitleEn: {
-    fontFamily: Fonts.extraBold,
-    fontSize: 17,
-    color: Colors.ink,
-    textAlign: 'center',
-    marginBottom: Layout.spacing.xs,
-  },
-  modalSubEn: {
-    fontFamily: Fonts.regular,
-    fontSize: 14,
-    color: Colors.inkMuted,
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: Layout.spacing.xl,
+  topicRow: {
     paddingHorizontal: Layout.spacing.md,
-  },
-  modalButton: {
-    width: '100%',
+    gap: Layout.spacing.sm,
   },
 });

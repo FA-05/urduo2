@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
     fontSize: Layout.isShortDevice ? 26 : 32,
     color: Colors.white,
     textAlign: 'center',
-    lineHeight: Layout.isShortDevice ? 40 : 50,
+    lineHeight: Layout.isShortDevice ? 26 * 2.2 : 32 * 2.2,
   },
   questionHint: {
     fontSize: 11,

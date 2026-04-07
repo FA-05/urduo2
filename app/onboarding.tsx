@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState } from "react";
 import {
   View,
   Text,
@@ -7,9 +7,9 @@ import {
   FlatList,
   Pressable,
   ViewToken,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
+} from "react-native";
+import { useRouter } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
   FadeIn,
   FadeInDown,
@@ -18,15 +18,15 @@ import Animated, {
   withSpring,
   useSharedValue,
   withTiming,
-} from 'react-native-reanimated';
-import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors } from '../constants/colors';
-import { Fonts, TypeScale, UrduTypeScale } from '../constants/fonts';
-import { Layout } from '../constants/layout';
-import { Storage, StorageKeys } from '../utils/storage';
+} from "react-native-reanimated";
+import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Colors } from "../constants/colors";
+import { Fonts, TypeScale, UrduTypeScale } from "../constants/fonts";
+import { Layout } from "../constants/layout";
+import { Storage, StorageKeys } from "../utils/storage";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
 
 interface OnboardingPage {
   id: string;
@@ -40,32 +40,32 @@ interface OnboardingPage {
 
 const PAGES: OnboardingPage[] = [
   {
-    id: '1',
-    icon: 'book-outline',
-    titleEn: 'Learn Urdu',
-    titleUr: 'اردو سیکھیں',
+    id: "1",
+    icon: "book-outline",
+    titleEn: "Learn Urdu",
+    titleUr: "اردو سیکھیں",
     description:
-      'Master Urdu through fun, bite-sized lessons designed for Italian speakers. Build your vocabulary one word at a time.',
+      "Master Urdu through fun, bite-sized lessons designed for Italian speakers. Build your vocabulary one word at a time.",
     gradient: [Colors.jade, Colors.jadeDim],
     accent: Colors.jadeVivid,
   },
   {
-    id: '2',
-    icon: 'game-controller-outline',
-    titleEn: 'Interactive Exercises',
-    titleUr: 'انٹرایکٹو مشقیں',
+    id: "2",
+    icon: "game-controller-outline",
+    titleEn: "Interactive Exercises",
+    titleUr: "انٹرایکٹو مشقیں",
     description:
-      'Practice with flashcards, quizzes, sentence building, and more. Every lesson keeps you engaged and learning.',
+      "Practice with flashcards, quizzes, sentence building, and more. Every lesson keeps you engaged and learning.",
     gradient: [Colors.jade, Colors.jadeDim],
     accent: Colors.jadeVivid,
   },
   {
-    id: '3',
-    icon: 'flame-outline',
-    titleEn: 'Track Your Progress',
-    titleUr: 'اپنی ترقی دیکھیں',
+    id: "3",
+    icon: "flame-outline",
+    titleEn: "Track Your Progress",
+    titleUr: "اپنی ترقی دیکھیں",
     description:
-      'Build daily streaks, earn rewards, and watch your skills grow. Your journey to fluency starts now!',
+      "Build daily streaks, earn rewards, and watch your skills grow. Your journey to fluency starts now!",
     gradient: [Colors.saffron, Colors.saffronDim],
     accent: Colors.saffronLight,
   },
@@ -86,17 +86,22 @@ export default function OnboardingScreen() {
     },
   ).current;
 
-  const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
+  const viewabilityConfig = useRef({
+    viewAreaCoveragePercentThreshold: 50,
+  }).current;
 
   const handleNext = () => {
     if (currentIndex < PAGES.length - 1) {
-      flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
+      flatListRef.current?.scrollToIndex({
+        index: currentIndex + 1,
+        animated: true,
+      });
     }
   };
 
   const handleGetStarted = async () => {
     await Storage.set(StorageKeys.ONBOARDED, true);
-    router.replace('/auth/login');
+    router.replace("/auth/login");
   };
 
   const isLastPage = currentIndex === PAGES.length - 1;
@@ -105,7 +110,13 @@ export default function OnboardingScreen() {
     transform: [{ scale: buttonScale.value }],
   }));
 
-  const renderPage = ({ item, index }: { item: OnboardingPage; index: number }) => (
+  const renderPage = ({
+    item,
+    index,
+  }: {
+    item: OnboardingPage;
+    index: number;
+  }) => (
     <View style={[styles.page, { width }]}>
       <LinearGradient colors={item.gradient} style={StyleSheet.absoluteFill} />
 
@@ -117,7 +128,10 @@ export default function OnboardingScreen() {
         {/* Icon */}
         <Animated.View
           entering={FadeInDown.delay(200).duration(600).springify()}
-          style={[styles.iconContainer, { backgroundColor: `${item.accent}25` }]}
+          style={[
+            styles.iconContainer,
+            { backgroundColor: `${item.accent}25` },
+          ]}
         >
           <Ionicons name={item.icon} size={56} color={Colors.white} />
         </Animated.View>
@@ -165,22 +179,11 @@ export default function OnboardingScreen() {
       />
 
       {/* Bottom controls */}
-      <View style={[styles.bottomContainer, { paddingBottom: insets.bottom + 24 }]}>
-        {/* Pagination dots */}
-        <View style={styles.pagination}>
-          {PAGES.map((_, i) => (
-            <View
-              key={i}
-              style={[
-                styles.dot,
-                i === currentIndex ? styles.dotActive : styles.dotInactive,
-              ]}
-            />
-          ))}
-        </View>
-
+      <View
+        style={[styles.bottomContainer, { paddingBottom: insets.bottom + 24 }]}
+      >
         {/* Action button */}
-        <Animated.View style={[buttonAnimStyle, { width: '100%' }]}>
+        <Animated.View style={[buttonAnimStyle, { width: "100%" }]}>
           <Pressable
             onPress={isLastPage ? handleGetStarted : handleNext}
             onPressIn={() => {
@@ -192,13 +195,8 @@ export default function OnboardingScreen() {
             style={styles.button}
           >
             <Text style={styles.buttonText}>
-              {isLastPage ? 'Login' : 'Next'}
+              {isLastPage ? "Login" : "Next"}
             </Text>
-            <Ionicons
-              name={isLastPage ? 'log-in-outline' : 'chevron-forward'}
-              size={20}
-              color={Colors.white}
-            />
           </Pressable>
         </Animated.View>
       </View>
@@ -213,11 +211,11 @@ const styles = StyleSheet.create({
   },
   page: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   circle1: {
-    position: 'absolute',
+    position: "absolute",
     width: width * 1.2,
     height: width * 1.2,
     borderRadius: width * 0.6,
@@ -225,7 +223,7 @@ const styles = StyleSheet.create({
     right: -width * 0.3,
   },
   circle2: {
-    position: 'absolute',
+    position: "absolute",
     width: width * 0.8,
     height: width * 0.8,
     borderRadius: width * 0.4,
@@ -234,51 +232,51 @@ const styles = StyleSheet.create({
   },
   pageContent: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
     paddingHorizontal: 40,
   },
   iconContainer: {
     width: 120,
     height: 120,
     borderRadius: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 32,
   },
   urduTitle: {
     fontFamily: Fonts.urduBold,
     fontSize: UrduTypeScale.h1,
-    color: 'rgba(255,255,255,0.6)',
-    textAlign: 'center',
+    color: "rgba(255,255,255,0.6)",
+    textAlign: "center",
     marginBottom: 8,
   },
   title: {
     fontFamily: Fonts.extraBold,
     fontSize: 34,
     color: Colors.white,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 16,
     letterSpacing: -0.5,
   },
   description: {
     fontFamily: Fonts.regular,
     fontSize: 16,
-    color: 'rgba(255,255,255,0.75)',
-    textAlign: 'center',
+    color: "rgba(255,255,255,0.75)",
+    textAlign: "center",
     lineHeight: 24,
     maxWidth: 300,
   },
   bottomContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    alignItems: 'center',
+    alignItems: "center",
     paddingHorizontal: 32,
   },
   pagination: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
     marginBottom: 28,
   },
@@ -292,28 +290,22 @@ const styles = StyleSheet.create({
   },
   dotInactive: {
     width: 8,
-    backgroundColor: 'rgba(255,255,255,0.35)',
+    backgroundColor: "rgba(255,255,255,0.35)",
   },
   button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.jadeVivid,
-    borderColor: Colors.jade,
-    borderWidth: 1.5,
-    borderBottomWidth: 3,
-    paddingVertical: 13,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: Colors.white,
+    paddingVertical: 16,
     paddingHorizontal: 24,
-    borderRadius: Layout.radius.lg,
+    borderRadius: Layout.radius.sm,
     minHeight: 48,
-    width: '100%',
-    gap: 8,
-    ...Layout.shadow.btn,
+    width: "100%",
   },
   buttonText: {
     fontFamily: Fonts.bold,
     fontSize: 16,
-    color: Colors.white,
+    color: Colors.jadeDim,
     letterSpacing: 0.4,
   },
 });

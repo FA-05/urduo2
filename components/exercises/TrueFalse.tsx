@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
     color: Colors.ink,
     fontFamily: Fonts.urduBold,
     textAlign: 'center',
-    lineHeight: Layout.isShortDevice ? 38 : 50,
+    lineHeight: Layout.isShortDevice ? 26 * 2.2 : 32 * 2.2,
   },
   hint: {
     fontSize: 11,
